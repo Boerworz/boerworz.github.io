@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+
+
+ <html class="no-js"> 
+<head>
+    <title>Printing the View Controller Hierarchy on iOS &middot; ndersson.me</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="content-language" content="en-us" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="author" content="Tim Andersson">
+    <meta name="description" content="A little bit of code.">
+    <meta name="generator" content="Hugo 0.15" />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" type="text/css" href="http://boerworz.github.io/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/tomorrow.min.css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,700|Lora:400,700,400italic" rel="stylesheet" type="text/css">
+</head>
+<body>
+    
+    <div class="off-canvas">
+    <figure class="avatar">
+        <img src="http://boerworz.github.io/img/avatar.jpg" title="Tim Andersson">
+    </figure>
+    <div class="bio">
+        
+        <h1>Hi, I&#39;m Tim</h1>
+        
+        
+        <p>I like to dabble in all things related to programming, and occasionally I write about what I&rsquo;m up to.</p>
+        
+    </div>
+    <nav>
+        
+
+        <ul>
+            <li><a target="_blank" href="http://boerworz.github.io/index.xml">RSS feed</a></li>
+        </ul>
+
+        
+        <h6>Follow me on</h6>
+        
+
+        <ul>
+        
+            <li><a target="_blank" href="//github.com/boerworz">Github</a></li>
+        
+            <li><a target="_blank" href="//twitter.com/boerworz">Twitter</a></li>
+        
+        </ul>        
+    </nav>
+</div>
+
+    <div class="site-wrapper">
+        <header>
+	<div class="h-wrap">
+		
+		<h1 class="title"><a href="http://boerworz.github.io/">ndersson.me</a></h1>
+		
+		<a class="menu-icon" title="Menu"><span class="lines"></span></a>
+	</div>
+</header>
+        
+        <section class="single-wrap">
+            <article class="single-content" itemscope itemtype="//schema.org/BlogPosting">
+                <div class="feat">
+                    <h5 class="page-date">
+                    <time datetime="" itemprop="datePublished">
+                    1. January 2015
+                    </time>
+                    </h5>
+                </div>
+                <h1 class="page-title" itemprop="name headline">Printing the View Controller Hierarchy on iOS</h1>
+                <div itemprop="articleBody">
+                    <p>A few days ago I stumbled across an excellent article on <a href="http://www.objc.io">obj.io</a> about
+debugging, titled <a href="http://www.objc.io/issue-19/debugging-case-study.html">Debugging: A Case Study</a>. The article walks us through
+the workflow of fixing a bug that turned out to be an issue in UIKit, and contains
+a number of useful debugging tricks. There was one trick that I did not previously
+know about, and which turned out to be immediately useful - printing the view
+controller hierarchy.</p>
+
+<p>Similar to how it&rsquo;s possible to print the <em>view</em> hierarchy using the private
+method <code>-[UIView recursiveDescription]</code>, on iOS 8+ it&rsquo;s also possible to print the
+<em>view controller</em> hierarchy using another private method: <code>-[UIViewController _printHierarchy]</code>.
+By calling this method on a window&rsquo;s root view controller, we can see the entire
+view controller hierarchy for a window. This is especially useful in the debugger:</p>
+
+<pre><code class="language-objc">(lldb) po [[[UIWindow keyWindow] rootViewController] _printHierarchy]
+&lt;UINavigationController 0x7fe295815c00&gt;, state: appeared, view: &lt;UILayoutContainerView 0x7fe29411a860&gt;
+   | &lt;TPAInitialViewController 0x7fe294118150&gt;, state: appeared, view: &lt;UIView 0x7fe29411fc90&gt;
+</code></pre>
+
+<p>If you have any cool and/or useful debugging tricks of your own, let me know on <a href="http://twitter.com/boerworz">Twitter</a>.</p>
+
+                </div>
+                <div class="feat share">
+                    <a href="//twitter.com/share" class="popup">
+                        <span class="icon-twitter"></span>
+                    </a>
+                </div>
+                
+                
+
+                
+                    <a rel="next" href="http://boerworz.github.io/post/that_time_of_the_year/" id="next">
+                        <span class="nav-title nav-title-next"></span> &rarr;
+                    </a>
+                
+                
+                    <a rel="prev" href="http://boerworz.github.io/post/cycript_and_netnewswire/" id="prev">
+                        &larr; <span class="nav-title nav-title-prev"></span>
+                    </a>
+                
+            </article>
+        </section>
+
+        <footer>
+	
+	<small>Powered by <a href="//gohugo.io">Hugo</a> - Theme based on <a href="//github.com/digitalcraftsman/hugo-hikari-theme">Hikari</a> - © Tim Andersson</small>
+	
+</footer>
+    </div>
+    
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://boerworz.github.io/js/main.js"></script>
+
+
+
+<!-- Syntax highlighting -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

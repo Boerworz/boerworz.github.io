@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+
+
+ <html class="no-js"> 
+<head>
+    <title>Cycript and NetNewsWire &middot; ndersson.me</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="content-language" content="en-us" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="author" content="Tim Andersson">
+    <meta name="description" content="A little bit of code.">
+    <meta name="generator" content="Hugo 0.15" />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" type="text/css" href="http://boerworz.github.io/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/tomorrow.min.css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,700|Lora:400,700,400italic" rel="stylesheet" type="text/css">
+</head>
+<body>
+    
+    <div class="off-canvas">
+    <figure class="avatar">
+        <img src="http://boerworz.github.io/img/avatar.jpg" title="Tim Andersson">
+    </figure>
+    <div class="bio">
+        
+        <h1>Hi, I&#39;m Tim</h1>
+        
+        
+        <p>I like to dabble in all things related to programming, and occasionally I write about what I&rsquo;m up to.</p>
+        
+    </div>
+    <nav>
+        
+
+        <ul>
+            <li><a target="_blank" href="http://boerworz.github.io/index.xml">RSS feed</a></li>
+        </ul>
+
+        
+        <h6>Follow me on</h6>
+        
+
+        <ul>
+        
+            <li><a target="_blank" href="//github.com/boerworz">Github</a></li>
+        
+            <li><a target="_blank" href="//twitter.com/boerworz">Twitter</a></li>
+        
+        </ul>        
+    </nav>
+</div>
+
+    <div class="site-wrapper">
+        <header>
+	<div class="h-wrap">
+		
+		<h1 class="title"><a href="http://boerworz.github.io/">ndersson.me</a></h1>
+		
+		<a class="menu-icon" title="Menu"><span class="lines"></span></a>
+	</div>
+</header>
+        
+        <section class="single-wrap">
+            <article class="single-content" itemscope itemtype="//schema.org/BlogPosting">
+                <div class="feat">
+                    <h5 class="page-date">
+                    <time datetime="" itemprop="datePublished">
+                    28. February 2014
+                    </time>
+                    </h5>
+                </div>
+                <h1 class="page-title" itemprop="name headline">Cycript and NetNewsWire</h1>
+                <div itemprop="articleBody">
+                    <p>Yesterday, I gave <a href="http://www.cycript.org">Cycript</a> a shot. I&rsquo;ve stumbled across it several times in the past, but
+never given it a try. I&rsquo;m glad I finally did, because it is very cool!</p>
+
+<p>Cycript is an interactive console that lets you modify running applications on either iOS or OS X using a weird hybrid of JavaScript and Objective-C++ syntax. It lets you call arbitrary methods on objects, find instances of a certain class (through <a href="http://www.cycript.org/manual/#7061c058-5485-4c00-be7e-b67accc55796">magic</a>), and offers tab-completion and syntax highlighting for all of this. I suggest you head over to the <a href="http://www.cycript.org">site</a> to read more about it and to install it!</p>
+
+<p>Anyhow, after playing with it for a while, I put together a (<em>very</em>) small script that removes the ads from NetNewsWire:</p>
+
+<pre><code class="language-javascript">var adView = choose(NNWAdView)[0];
+if(adView != null) {
+    [adView.superview removeFromSuperview];
+}
+</code></pre>
+
+<p><em>Note: Please don&rsquo;t use this script instead of purchasing NNW.</em></p>
+
+<p>To use it, simply launch NetNewsWire and run the script with <code>cycript -p NetNewsWire remove_ads.cy</code> (assuming you&rsquo;ve saved
+the script to a file named <code>remove_ads.cy</code>). Observe that since Cycript injected the script into the running NetNewsWire process, the changes are lost as soon as NetNewsWire is restarted.</p>
+
+<p>Even though this is a very simple script, it gives a tiny glimpse into how powerful and easy-to-use Cycript is. I&rsquo;m just getting started, and plan to
+try it out on my iPod Touch next. Perhaps this is the first step on a road to writing my first iOS tweak.</p>
+
+                </div>
+                <div class="feat share">
+                    <a href="//twitter.com/share" class="popup">
+                        <span class="icon-twitter"></span>
+                    </a>
+                </div>
+                
+                
+
+                
+                    <a rel="next" href="http://boerworz.github.io/post/print_view_controller_hierarchy/" id="next">
+                        <span class="nav-title nav-title-next"></span> &rarr;
+                    </a>
+                
+                
+            </article>
+        </section>
+
+        <footer>
+	
+	<small>Powered by <a href="//gohugo.io">Hugo</a> - Theme based on <a href="//github.com/digitalcraftsman/hugo-hikari-theme">Hikari</a> - © Tim Andersson</small>
+	
+</footer>
+    </div>
+    
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://boerworz.github.io/js/main.js"></script>
+
+
+
+<!-- Syntax highlighting -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

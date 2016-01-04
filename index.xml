@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ndersson.me</title>
+    <link>http://boerworz.github.io/</link>
+    <description>Recent content on ndersson.me</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 04 Jan 2016 17:52:29 +0100</lastBuildDate>
+    <atom:link href="http://boerworz.github.io/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>That time of the year</title>
+      <link>http://boerworz.github.io/post/that_time_of_the_year/</link>
+      <pubDate>Mon, 04 Jan 2016 17:52:29 +0100</pubDate>
+      
+      <guid>http://boerworz.github.io/post/that_time_of_the_year/</guid>
+      <description>&lt;p&gt;It&amp;rsquo;s that time of the year. The &lt;em&gt;I-should-create-a-blog&lt;/em&gt; time of the year.&lt;/p&gt;
+
+&lt;p&gt;Nearly two years ago, at the beginning of 2014, I figured it was time to get
+into the blogging game. I did some research on what the most popular static site
+generator was and ended up with &lt;a href=&#34;//jekyllrb.com&#34;&gt;Jekyll&lt;/a&gt;. I found a theme
+I liked and spent some time tweaking it. I wrote my first blog post, about
+&lt;a href=&#34;//cycript.org&#34;&gt;Cycript&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;And that was it. I left the blog to gather dust on my machine, never seeing
+the light of &lt;del&gt;day&lt;/del&gt; the internet.&lt;/p&gt;
+
+&lt;p&gt;In january of 2015, I wrote a second blog post - this time about an iOS debugging
+tip. I now had &lt;em&gt;two&lt;/em&gt; posts, surely this was the time to publish the blog!&lt;/p&gt;
+
+&lt;p&gt;Nope. Never happened.&lt;/p&gt;
+
+&lt;p&gt;Which brings us to this post. As I said, it&amp;rsquo;s that time of the year again. I tried
+to get my old blog running (or rather &lt;em&gt;generated&lt;/em&gt;) again, but I was met with:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ jekyll serve
+Configuration file: /Users/timandersson/Development/Web/Jekyll/personal_blog/_config.yml
+            Source: /Users/timandersson/Development/Web/Jekyll/personal_blog
+       Destination: /Users/timandersson/Development/Web/Jekyll/personal_blog/_site
+      Generating... 
+                    done.
+I, [2016-01-04T21:59:42.024583 #78054]  INFO -- : Celluloid 0.17.2 is running in BACKPORTED mode. [ http://git.io/vJf3J ]
+jekyll 2.5.3 | Error:  wrong number of arguments (2 for 1)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;I spent some time wrestling with different incantations of &lt;code&gt;rvm&lt;/code&gt; and &lt;code&gt;gem&lt;/code&gt; but
+quickly grew tired of trying to get it to work. I was close to giving up on my
+dream of becoming a blogger. Then, a couple of days ago, I stumbled across
+&lt;a href=&#34;//gohugo.io&#34;&gt;Hugo&lt;/a&gt;. It was easy to &lt;a href=&#34;//gohugo.io/tutorials/installing-on-mac/&#34;&gt;setup&lt;/a&gt;
+and I quickly found a &lt;a href=&#34;//themes.gohugo.io/hikari/&#34;&gt;theme&lt;/a&gt; I liked using their
+&lt;a href=&#34;//themes.gohugo.io&#34;&gt;theme showcase&lt;/a&gt;. It even lead to me creating my very first
+&lt;a href=&#34;https://github.com/digitalcraftsman/hugo-hikari-theme/pull/4&#34;&gt;pull request&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I ported my two blog posts from the Jekyll format to the format used by Hugo
+and started writing this post. Will I ever get around to publishing the blog?&lt;/p&gt;
+
+&lt;p&gt;I hope so.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Printing the View Controller Hierarchy on iOS</title>
+      <link>http://boerworz.github.io/post/print_view_controller_hierarchy/</link>
+      <pubDate>Thu, 01 Jan 2015 19:21:05 +0100</pubDate>
+      
+      <guid>http://boerworz.github.io/post/print_view_controller_hierarchy/</guid>
+      <description>&lt;p&gt;A few days ago I stumbled across an excellent article on &lt;a href=&#34;http://www.objc.io&#34;&gt;obj.io&lt;/a&gt; about
+debugging, titled &lt;a href=&#34;http://www.objc.io/issue-19/debugging-case-study.html&#34;&gt;Debugging: A Case Study&lt;/a&gt;. The article walks us through
+the workflow of fixing a bug that turned out to be an issue in UIKit, and contains
+a number of useful debugging tricks. There was one trick that I did not previously
+know about, and which turned out to be immediately useful - printing the view
+controller hierarchy.&lt;/p&gt;
+
+&lt;p&gt;Similar to how it&amp;rsquo;s possible to print the &lt;em&gt;view&lt;/em&gt; hierarchy using the private
+method &lt;code&gt;-[UIView recursiveDescription]&lt;/code&gt;, on iOS 8+ it&amp;rsquo;s also possible to print the
+&lt;em&gt;view controller&lt;/em&gt; hierarchy using another private method: &lt;code&gt;-[UIViewController _printHierarchy]&lt;/code&gt;.
+By calling this method on a window&amp;rsquo;s root view controller, we can see the entire
+view controller hierarchy for a window. This is especially useful in the debugger:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-objc&#34;&gt;(lldb) po [[[UIWindow keyWindow] rootViewController] _printHierarchy]
+&amp;lt;UINavigationController 0x7fe295815c00&amp;gt;, state: appeared, view: &amp;lt;UILayoutContainerView 0x7fe29411a860&amp;gt;
+   | &amp;lt;TPAInitialViewController 0x7fe294118150&amp;gt;, state: appeared, view: &amp;lt;UIView 0x7fe29411fc90&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you have any cool and/or useful debugging tricks of your own, let me know on &lt;a href=&#34;http://twitter.com/boerworz&#34;&gt;Twitter&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Cycript and NetNewsWire</title>
+      <link>http://boerworz.github.io/post/cycript_and_netnewswire/</link>
+      <pubDate>Fri, 28 Feb 2014 15:53:32 +0100</pubDate>
+      
+      <guid>http://boerworz.github.io/post/cycript_and_netnewswire/</guid>
+      <description>&lt;p&gt;Yesterday, I gave &lt;a href=&#34;http://www.cycript.org&#34;&gt;Cycript&lt;/a&gt; a shot. I&amp;rsquo;ve stumbled across it several times in the past, but
+never given it a try. I&amp;rsquo;m glad I finally did, because it is very cool!&lt;/p&gt;
+
+&lt;p&gt;Cycript is an interactive console that lets you modify running applications on either iOS or OS X using a weird hybrid of JavaScript and Objective-C++ syntax. It lets you call arbitrary methods on objects, find instances of a certain class (through &lt;a href=&#34;http://www.cycript.org/manual/#7061c058-5485-4c00-be7e-b67accc55796&#34;&gt;magic&lt;/a&gt;), and offers tab-completion and syntax highlighting for all of this. I suggest you head over to the &lt;a href=&#34;http://www.cycript.org&#34;&gt;site&lt;/a&gt; to read more about it and to install it!&lt;/p&gt;
+
+&lt;p&gt;Anyhow, after playing with it for a while, I put together a (&lt;em&gt;very&lt;/em&gt;) small script that removes the ads from NetNewsWire:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;var adView = choose(NNWAdView)[0];
+if(adView != null) {
+    [adView.superview removeFromSuperview];
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Note: Please don&amp;rsquo;t use this script instead of purchasing NNW.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;To use it, simply launch NetNewsWire and run the script with &lt;code&gt;cycript -p NetNewsWire remove_ads.cy&lt;/code&gt; (assuming you&amp;rsquo;ve saved
+the script to a file named &lt;code&gt;remove_ads.cy&lt;/code&gt;). Observe that since Cycript injected the script into the running NetNewsWire process, the changes are lost as soon as NetNewsWire is restarted.&lt;/p&gt;
+
+&lt;p&gt;Even though this is a very simple script, it gives a tiny glimpse into how powerful and easy-to-use Cycript is. I&amp;rsquo;m just getting started, and plan to
+try it out on my iPod Touch next. Perhaps this is the first step on a road to writing my first iOS tweak.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
