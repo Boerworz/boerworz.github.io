@@ -2,19 +2,19 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on ndersson.me</title>
-    <link>http://boerworz.github.io/post/</link>
+    <link>http://ndersson.me/post/</link>
     <description>Recent content in Posts on ndersson.me</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 04 Jan 2016 17:52:29 +0100</lastBuildDate>
-    <atom:link href="http://boerworz.github.io/post/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://ndersson.me/post/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
       <title>That time of the year</title>
-      <link>http://boerworz.github.io/post/that_time_of_the_year/</link>
+      <link>http://ndersson.me/post/that_time_of_the_year/</link>
       <pubDate>Mon, 04 Jan 2016 17:52:29 +0100</pubDate>
       
-      <guid>http://boerworz.github.io/post/that_time_of_the_year/</guid>
+      <guid>http://ndersson.me/post/that_time_of_the_year/</guid>
       <description>&lt;p&gt;It&amp;rsquo;s that time of the year. The &lt;em&gt;I-should-create-a-blog&lt;/em&gt; time of the year.&lt;/p&gt;
 
 &lt;p&gt;Nearly two years ago, at the beginning of 2014, I figured it was time to get
@@ -61,10 +61,10 @@ and started writing this post. Will I ever get around to publishing the blog?&lt
     
     <item>
       <title>Printing the View Controller Hierarchy on iOS</title>
-      <link>http://boerworz.github.io/post/print_view_controller_hierarchy/</link>
+      <link>http://ndersson.me/post/print_view_controller_hierarchy/</link>
       <pubDate>Thu, 01 Jan 2015 19:21:05 +0100</pubDate>
       
-      <guid>http://boerworz.github.io/post/print_view_controller_hierarchy/</guid>
+      <guid>http://ndersson.me/post/print_view_controller_hierarchy/</guid>
       <description>&lt;p&gt;A few days ago I stumbled across an excellent article on &lt;a href=&#34;http://www.objc.io&#34;&gt;obj.io&lt;/a&gt; about
 debugging, titled &lt;a href=&#34;http://www.objc.io/issue-19/debugging-case-study.html&#34;&gt;Debugging: A Case Study&lt;/a&gt;. The article walks us through
 the workflow of fixing a bug that turned out to be an issue in UIKit, and contains
@@ -89,10 +89,10 @@ view controller hierarchy for a window. This is especially useful in the debugge
     
     <item>
       <title>Cycript and NetNewsWire</title>
-      <link>http://boerworz.github.io/post/cycript_and_netnewswire/</link>
+      <link>http://ndersson.me/post/cycript_and_netnewswire/</link>
       <pubDate>Fri, 28 Feb 2014 15:53:32 +0100</pubDate>
       
-      <guid>http://boerworz.github.io/post/cycript_and_netnewswire/</guid>
+      <guid>http://ndersson.me/post/cycript_and_netnewswire/</guid>
       <description>&lt;p&gt;Yesterday, I gave &lt;a href=&#34;http://www.cycript.org&#34;&gt;Cycript&lt;/a&gt; a shot. I&amp;rsquo;ve stumbled across it several times in the past, but
 never given it a try. I&amp;rsquo;m glad I finally did, because it is very cool!&lt;/p&gt;
 
