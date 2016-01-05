@@ -222,7 +222,6 @@ th {
 
 .h-wrap,
 .menu-icon,
-.off-canvas,
 footer {
     padding: 2em
 }
@@ -788,12 +787,13 @@ header {
 .off-canvas {
     position: fixed;
     top: 0;
-    right: -25em;
-    width: 25em;
+    right: -15em;
+    width: 15em;
     height: 100%;
     background: #fafafa;
     z-index: 100;
-    overflow: scroll
+    overflow: hidden;
+	padding: 1em;
 }
 
 @media (max-width:399px) {
@@ -819,7 +819,8 @@ header {
 }
 
 .off-canvas .bio {
-    display: block
+    display: block;
+	margin-bottom: 1em;
 }
 
 .off-canvas .bio h1 {
@@ -1046,7 +1047,6 @@ footer small {
     border-radius: 100px;
     bottom: 2em;
     color: #333;
-    transition: all .15s ease-in;
 }
 
 @media (max-width:942px) {
@@ -1107,6 +1107,11 @@ footer small {
     margin-left: .5em
 }
 
+#prev:hover .nav-title,
+#next:hover .nav-title {
+    display: inline
+}
+
 #prev,
 #next {
     position: fixed;
@@ -1145,6 +1150,18 @@ footer small {
 .nav-title-next {
     margin-right: 10px;
     margin-left: 5px
+}
+
+#prev:hover .nav-title,
+#next:hover .nav-title {
+    display: inline
+}
+
+@media (max-width:942px) {
+	#prev,
+	#next {
+		display: none
+	}
 }
 
 .pagination {
