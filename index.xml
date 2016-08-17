@@ -101,7 +101,7 @@ had to support a different style:&lt;/p&gt;
 
 
 &lt;p&gt;As you can see, nesting configuration models works very well. To apply the
-different styles I simply implemented an &lt;code&gt;apply(style:)&lt;/code&gt; method in the &lt;a href=&#34;https://github.com/Boerworz/NightModeTransition/blob/master/NightModeTransition/ArchiveViewController.swift#L259,L266&#34;&gt;view
+different styles I simply implemented an &lt;code&gt;apply(style:)&lt;/code&gt; method in the &lt;a href=&#34;https://github.com/Boerworz/NightModeTransition/blob/master/NightModeTransition/ArchiveViewController.swift#L300-L307&#34;&gt;view
 controller&lt;/a&gt; and the &lt;a href=&#34;https://github.com/Boerworz/NightModeTransition/blob/master/NightModeTransition/ArchiveTableCellView.swift#L36-L39&#34;&gt;cell subclass&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;In order to transition between the modes in the future we also need to now what
