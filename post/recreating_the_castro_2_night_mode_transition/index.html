@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+
+
+
+ <html class="no-js"> 
+<head>
+    <title>Recreating the Castro 2 Night Mode Transition &middot; ndersson.me</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="content-language" content="en-us" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="author" content="Tim Andersson">
+    <meta name="description" content="A little bit of code.">
+    <meta name="generator" content="Hugo 0.16" />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" type="text/css" href="http://ndersson.me/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/tomorrow.min.css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,700|Lora:400,700,400italic" rel="stylesheet" type="text/css">
+</head>
+<body>
+    
+    <div class="off-canvas">
+    <figure class="avatar">
+        <img src="http://ndersson.me/img/avatar.jpg" title="Tim Andersson">
+    </figure>
+    <div class="bio">
+        
+        <h1>Hi, I&#39;m Tim</h1>
+        
+        
+        <p>I like to dabble in all things related to programming, and occasionally I write about what I&rsquo;m up to.</p>
+        
+    </div>
+    <nav>
+        
+
+        <ul>
+            <li><a target="_blank" href="http://ndersson.me/index.xml">RSS feed</a></li>
+        </ul>
+
+        
+        <h6>Follow me on</h6>
+        
+
+        <ul>
+        
+            <li><a href="//github.com/boerworz">Github</a></li>
+        
+            <li><a href="//twitter.com/boerworz">Twitter</a></li>
+        
+        </ul>        
+    </nav>
+</div>
+
+
+    <div class="site-wrapper">
+        <header>
+	<div class="h-wrap">
+		
+		<h1 class="title"><a href="http://ndersson.me/">ndersson.me</a></h1>
+		
+		<a class="menu-icon" title="Menu"><span class="lines"></span></a>
+	</div>
+</header>
+        
+        <section class="single-wrap">
+            <article class="single-content" itemscope itemtype="//schema.org/BlogPosting">
+                <div class="feat">
+                    <h5 class="page-date">
+                    <time datetime="" itemprop="datePublished">
+                    17. August 2016
+                    </time>
+                    </h5>
+                </div>
+                <h1 class="page-title" itemprop="name headline">Recreating the Castro 2 Night Mode Transition</h1>
+                <div itemprop="articleBody">
+                    
+
+<p><a href="http://supertop.co">Supertop</a> recently released version 2.0 of their podcast
+player for iOS, <a href="http://supertop.co/castro/">Castro</a>. When I watched the
+<a href="http://supertop.co/castro/#trailer">trailer</a>, the <em>Night Mode</em> feature in
+particular caught my eye. Rather, the way the feature was enabled is what
+caught my eye. If you watch the trailer, you&rsquo;ll see that <em>Night Mode</em> is enabled
+by swiping down with two fingers from any screen, and that the transition is
+super-slick and seamless.</p>
+
+<p>Since I really liked the transition, I thought it would be an interesting
+challenge to see if I could recreate it. It turned out not to be too difficult,
+and in this post I will be detailing how I managed to recreate the transition.
+If you just want to see the code, head on over to the
+<a href="https://github.com/boerworz/NightModeTransition">NightModeTransition GitHub repository</a>.</p>
+
+<p><em><strong>Note:</strong> Before you continue reading this post, you should make sure you&rsquo;ve
+watched either the <a href="http://supertop.co/castro/#trailer">Castro 2 trailer</a> or
+<a href="https://github.com/Boerworz/NightModeTransition/raw/master/transition.gif">the gif</a> from the <code>NightModeTransition</code> repository, otherwise this
+post probably won&rsquo;t make very much sense.</em></p>
+
+<h3 id="let-s-get-started">Let&rsquo;s get started</h3>
+
+<p>There&rsquo;s basically three parts or steps to recreating the demo application in the
+<a href="https://github.com/boerworz/NightModeTransition">NightModeTransition GitHub repository</a>. First we will put together a
+small application with some dummy content that supports different visual styles.
+Then we will implement the actual two-finger pan transition but without the
+bounciness. Finally, we will add the bounciness or stretchiness that makes the
+transition a lot cooler.</p>
+
+<p><em><strong>Note</strong>: I will gloss over some of the simpler and more mundane steps in this
+post since the focus is on how the transition is implemented, not on how to
+build an application from scratch.</em></p>
+
+<h4 id="1-creating-the-basic-application">1. Creating the basic application</h4>
+
+<p>To show off the transition, we need an application that supports at least two
+different visual modes. The content of the application doesn&rsquo;t really matter,
+but to get the most out of the transition the application should contain a few
+different UI elements.</p>
+
+<p>Since I was trying to recreate the transition from Castro I figured I might as
+well make the application look similar to Castro. I used a
+<code>UITableViewController</code> with a grouped table view and static cells, embedded in
+a <code>UINavigationController</code>. The cells use a custom <code>UITableViewCell</code> subclass
+so that we can easily support different visual modes.</p>
+
+<p><img src="/img/nightmodetransition_app.png" alt="The NightModeTransition app" /></p>
+
+<h5 id="supporting-different-modes">Supporting different modes</h5>
+
+<p>To support different modes (i.e. a Light and a Dark mode), I ended up using
+<em>configuration models</em> which Jesse Squires recently
+<a href="http://www.jessesquires.com/enums-as-configs/">wrote about</a>. I created a
+configuration model for each component (view controller, table view, cells) that
+had to support a different style:</p>
+
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span></span><span class="kd">struct</span> <span class="nc">ViewControllerStyle</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nv">navigationBarStyle</span><span class="p">:</span> <span class="n">UIBarStyle</span>
+    <span class="kd">var</span> <span class="nv">statusBarStyle</span><span class="p">:</span> <span class="n">UIStatusBarStyle</span>
+    <span class="kd">var</span> <span class="nv">tableViewStyle</span><span class="p">:</span> <span class="n">TableViewStyle</span>
+
+    <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Dark</span> <span class="p">=</span> <span class="n">ViewControllerStyle</span><span class="p">(...)</span>
+    <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Light</span> <span class="p">=</span> <span class="n">ViewControllerStyle</span><span class="p">(...)</span>
+<span class="p">}</span>
+
+<span class="kd">struct</span> <span class="nc">TableViewStyle</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nv">backgroundColor</span><span class="p">:</span> <span class="bp">UIColor</span>
+    <span class="kd">var</span> <span class="nv">separatorColor</span><span class="p">:</span> <span class="bp">UIColor</span><span class="p">?</span>
+    <span class="kd">var</span> <span class="nv">cellStyle</span><span class="p">:</span> <span class="n">CellStyle</span>
+
+    <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Dark</span> <span class="p">=</span> <span class="n">TableViewStyle</span><span class="p">(...)</span>
+    <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Light</span> <span class="p">=</span> <span class="n">TableViewStyle</span><span class="p">(...)</span>
+<span class="p">}</span>
+
+<span class="kd">struct</span> <span class="nc">CellStyle</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nv">backgroundColor</span><span class="p">:</span> <span class="bp">UIColor</span>
+    <span class="kd">var</span> <span class="nv">textColor</span><span class="p">:</span> <span class="bp">UIColor</span>
+
+    <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Light</span> <span class="p">=</span> <span class="n">CellStyle</span><span class="p">(...)</span>
+    <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Dark</span> <span class="p">=</span> <span class="n">CellStyle</span><span class="p">(...)</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>As you can see, nesting configuration models works very well. To apply the
+different styles I simply implemented an <code>apply(style:)</code> method in the <a href="https://github.com/Boerworz/NightModeTransition/blob/master/NightModeTransition/ArchiveViewController.swift#L259,L266">view
+controller</a> and the <a href="https://github.com/Boerworz/NightModeTransition/blob/master/NightModeTransition/ArchiveTableCellView.swift#L36-L39">cell subclass</a>.</p>
+
+<p>In order to transition between the modes in the future we also need to now what
+mode we&rsquo;re currently displaying. The simplest way of doing this is letting the
+view controller keep track of if we&rsquo;re using the dark mode or not:</p>
+
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span></span><span class="kd">private</span> <span class="kd">var</span> <span class="nv">useDarkMode</span> <span class="p">=</span> <span class="kc">false</span> <span class="p">{</span>
+    <span class="kr">didSet</span> <span class="p">{</span> <span class="n">currentStyle</span> <span class="p">=</span> <span class="n">useDarkMode</span> <span class="p">?</span> <span class="p">.</span><span class="n">Dark</span> <span class="p">:</span> <span class="p">.</span><span class="n">Light</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>With that done, we have an application that supports a <em>Light</em> mode and a <em>Dark</em>
+mode, and we can toggle the current mode by changing the value of <code>useDarkMode</code>.</p>
+
+<h4 id="2-transitioning-between-modes">2. Transitioning between modes</h4>
+
+<p>The cool part of the transition is how there&rsquo;s a border where anything above
+the border uses the new mode, and anything below the border uses the current
+mode. Panning so that the border ends up in the middle of some text means that
+the top half of the text will be one color and the bottom half will be another.
+Whenever you see something like this, you should immediately think <em>&ldquo;Mask!&rdquo;</em>.</p>
+
+<h5 id="mask-layers">Mask layers</h5>
+
+<p>All <code>CALayer</code>s have a <code>var mask: CALayer?</code> property (since iOS 8, all <code>UIView</code>s
+have a <code>maskView</code> property as well). A mask layer lets us display part of a
+layer&rsquo;s contents. From <a href="https://developer.apple.com/library/mac/documentation/GraphicsImaging/Reference/CALayer_class/#//apple_ref/occ/instp/CALayer/mask">Apple&rsquo;s documentation</a>:</p>
+
+<p><em>The [mask] layer’s alpha channel determines how much of the layer’s content and
+background shows through. Fully or partially opaque pixels allow the underlying
+content to show through but fully transparent pixels block that content.</em></p>
+
+<p>Armed with this knowledge, we can surmise that the people at Supertop are using
+a mask to implement the transition. But wait, if we can only use the mask to
+selectively display part of a layer, how are they using it to display two
+different versions of the same UI simultaneously? The solution is to use the
+mask in combination with a <em>snapshot view</em>!</p>
+
+<h5 id="snapshot-views">Snapshot views</h5>
+
+<p>iOS 7.0 introduced the concept of <em>snapshot views</em> along with the new method
+<code>UIView.snapshotViewAfterScreenUpdates(_:)</code>. Snapshot views let us capture the
+current rendered appearance of a <code>UIView</code> in the form of a special <code>UIView</code>
+object. By calling <code>UIView.snapshotViewAfterScreenUpdates(_:)</code>, we get back a
+view object that looks just like the receiver and that we can use like any other
+view. This is very useful in our case since it lets us capture the appearance
+of the view hierarchy in the current mode before we apply the new mode.</p>
+
+<h5 id="putting-the-mask-and-snapshot-together">Putting the mask and snapshot together</h5>
+
+<p>Now we know what masks are and snapshots are, but how do we use them together to
+implement the transition? Well, it&rsquo;s not too complicated. The outline
+of the implementation is as follows:</p>
+
+<ol>
+<li>When the transition begins, take a snapshot of the view hierarchy in its
+current state.</li>
+<li>Place the snapshot on top of all other content.</li>
+<li>Apply the new mode to the view hierarchy using <code>useDarkMode</code>. This will not
+be visible immediately since the snapshot is covering the underlying content.</li>
+<li>Create an opaque mask layer that has the same size as the snapshot, and use
+it as the mask for the snapshot. Initially, only the snapshot view will be
+visible.</li>
+<li>As the transition progresses, move the mask layer to reveal more of the
+underlying content (which is using the new mode).</li>
+<li>When the transition completes, we animate the mask layer to its final
+position to reveal the entire underlying content.</li>
+</ol>
+
+<p>Note that the snapshot view is never moved; we only move the mask layer. This is
+what gives us the cool, seamless transition. The top edge of the mask layer is
+the border that separates the new mode from the previous mode. If we would move
+the snapshot, the two different versions of the UI wouldn&rsquo;t overlap perfectly
+and everything would look very strange.</p>
+
+<p>To drive the transition we will be using a <code>UIPanGestureRecognizer</code>, which
+brings us to our next section.</p>
+
+<h5 id="panning-and-progressing">Panning and progressing</h5>
+
+<p>The transition is entirely driven by a <code>UIPanGestureRecognizer</code>, and the
+code required for this is pretty simple. We configure a pan gesture recognizer
+to only recognize two-finger pans, and then act on the state of the recognizer
+when the recognizer changes:</p>
+
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span></span><span class="kd">private</span> <span class="kd">func</span> <span class="nf">setupPanGestureRecognizer</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nv">panRecognizer</span> <span class="p">=</span> <span class="bp">UIPanGestureRecognizer</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="kc">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="p">#</span><span class="n">selector</span><span class="p">(</span><span class="n">panRecognizerDidChange</span><span class="p">(</span><span class="kc">_</span><span class="p">:)))</span>
+    <span class="n">panRecognizer</span><span class="p">.</span><span class="n">maximumNumberOfTouches</span> <span class="p">=</span> <span class="mi">2</span>
+    <span class="n">panRecognizer</span><span class="p">.</span><span class="n">minimumNumberOfTouches</span> <span class="p">=</span> <span class="mi">2</span>
+    <span class="n">tableView</span><span class="p">.</span><span class="n">addGestureRecognizer</span><span class="p">(</span><span class="n">panRecognizer</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">panRecognizerDidChange</span><span class="p">(</span><span class="n">panRecognizer</span><span class="p">:</span> <span class="bp">UIPanGestureRecognizer</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">switch</span> <span class="n">panRecognizer</span><span class="p">.</span><span class="n">state</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="p">.</span><span class="n">Began</span><span class="p">:</span>
+        <span class="n">beginInteractiveStyleTransition</span><span class="p">(</span><span class="n">withPanRecognizer</span><span class="p">:</span> <span class="n">panRecognizer</span><span class="p">)</span>
+    <span class="k">case</span> <span class="p">.</span><span class="n">Changed</span><span class="p">:</span>
+        <span class="n">adjustMaskLayer</span><span class="p">(</span><span class="n">basedOn</span><span class="p">:</span> <span class="n">panRecognizer</span><span class="p">)</span>
+    <span class="k">case</span> <span class="p">.</span><span class="n">Ended</span><span class="p">,</span> <span class="p">.</span><span class="n">Failed</span><span class="p">:</span>
+        <span class="n">endInteractiveStyleTransition</span><span class="p">(</span><span class="n">withPanRecognizer</span><span class="p">:</span> <span class="n">panRecognizer</span><span class="p">)</span>
+    <span class="k">default</span><span class="p">:</span> <span class="k">break</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>The three functions called from <code>panRecognizerDidChange(_:)</code> all implement part
+of the aforementioned outline.
+<code>beginInteractiveStyleTransition(withPanRecognizer:)</code> performs steps 1-4,
+<code>adjustMaskLayer(basedOn:)</code> is responsible for step 5, and step 6 is done by
+<code>endInteractiveStyleTransition(withPanRecognizer:)</code>.</p>
+
+<p>Pretty simple! With that we have an application where we can use a two-finger
+pan gesture to interactively transition between the <em>Light</em> and <em>Dark</em> mode. All
+we need now is to add some stretchiness to make the transition feel less rigid.</p>
+
+<h4 id="3-making-it-stretch">3. Making it stretch</h4>
+
+<p>This was the trickiest part of the transition. I spent almost two hours trying
+to figure out how they deformed the mask layer, experimenting with
+<a href="https://github.com/victorBaro/VBFJellyView">UIDynamics</a> and <a href="https://github.com/fastred/AHKBendableView">spring animations</a>, until I finally
+stumbled upon the solution practically by accident.</p>
+
+<p>I knew that I most likely needed to use the velocity from the pan gesture
+recognizer to deform the mask layer, but I wasn&rsquo;t sure how to get the mask to
+return to its non-deformed state when the user stopped moving their fingers.
+After writing the code to deform the mask based on the velocity, it turned out
+that no more code was needed due to how and when the
+<code>panRecognizerDidChange(_:)</code> method is called.</p>
+
+<h5 id="deforming-the-mask-layer">Deforming the mask layer</h5>
+
+<p>Since we want to change the shape of the mask layer based on the velocity of the
+pan gesture recognizer, and the shape we want to achieve is non-rectangular, the
+most obvious choice is for us to use a <code>CAShapeLayer</code> as the mask layer.
+When <code>panRecognizerDidChange(_:)</code> is called, we call a method that updates the
+path property of the mask layer:</p>
+
+<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span></span><span class="kd">private</span> <span class="kd">func</span> <span class="nf">adjustMaskLayerPath</span><span class="p">(</span><span class="n">basedOn</span> <span class="n">panRecognizer</span><span class="p">:</span> <span class="bp">UIPanGestureRecognizer</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">guard</span> <span class="kd">let</span> <span class="nv">window</span> <span class="p">=</span> <span class="n">tableView</span><span class="p">.</span><span class="n">window</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+
+    <span class="kd">let</span> <span class="nv">maskingPath</span> <span class="p">=</span> <span class="bp">UIBezierPath</span><span class="p">()</span>
+
+    <span class="c1">// Top-left corner...</span>
+    <span class="n">maskingPath</span><span class="p">.</span><span class="n">moveToPoint</span><span class="p">(.</span><span class="n">zero</span><span class="p">)</span>
+
+    <span class="c1">// ...arc to top-right corner...</span>
+    <span class="kd">let</span> <span class="nv">damping</span><span class="p">:</span> <span class="n">CGFloat</span> <span class="p">=</span> <span class="mf">45.0</span>
+    <span class="kd">let</span> <span class="nv">verticalOffset</span> <span class="p">=</span> <span class="n">panRecognizer</span><span class="p">.</span><span class="n">velocityInView</span><span class="p">(</span><span class="n">window</span><span class="p">).</span><span class="n">y</span> <span class="o">/</span> <span class="n">damping</span>
+    <span class="n">maskingPath</span><span class="p">.</span><span class="n">addQuadCurveToPoint</span><span class="p">(</span>
+    	<span class="bp">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">),</span> 
+    	<span class="n">controlPoint</span><span class="p">:</span> <span class="bp">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">midX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">verticalOffset</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1">// ...to bottom-right corner...</span>
+    <span class="n">maskingPath</span><span class="p">.</span><span class="n">addLineToPoint</span><span class="p">(</span><span class="bp">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxY</span><span class="p">))</span>
+
+    <span class="c1">// ...to bottom-left corner...</span>
+    <span class="n">maskingPath</span><span class="p">.</span><span class="n">addLineToPoint</span><span class="p">(</span><span class="bp">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxY</span><span class="p">))</span>
+
+    <span class="c1">// ...and close the path.</span>
+    <span class="n">maskingPath</span><span class="p">.</span><span class="n">closePath</span><span class="p">()</span>
+
+    <span class="n">snapshotMaskLayer</span><span class="p">?.</span><span class="n">path</span> <span class="p">=</span> <span class="n">maskingPath</span><span class="p">.</span><span class="bp">CGPath</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>The most important part of this code are the lines that draw a quad curve using
+a control point whose vertical position is based on the velocity of the pan
+gesture recognizer. The larger the vertical velocity, the further from the edge
+of the mask layer the control point will end up, resulting in a more pronounced
+curve.</p>
+
+<h5 id="returning-the-mask-layer-to-its-non-deformed-state">Returning the mask layer to its non-deformed state</h5>
+
+<p>As I mentioned earlier, it turns out that we don&rsquo;t need any special code to
+return the mask layer to its non-deformed state! This is due to the fact that
+the pan gesture recognizer&rsquo;s target selector (<code>panRecognizerDidChange(_:)</code> in
+our case) keeps getting called periodically when the user stops moving their
+fingers (but keeps them on the screen) until the calculated velocity reaches
+zero. Since we change the shape layer&rsquo;s path based on the velocity, decreasing
+the velocity will also decrease the deformation. This is what gives us the nice
+effect of the edges of the mask layer catching up with the center of the mask
+layer when the user stops moving their finger. Pretty sweet!</p>
+
+<p>The astute reader might have noticed that I only mentioned the scenario in which
+the user stops moving their fingers but keeps them on the screen. What happens
+if the user lifts their fingers off the screen in the middle of the panning
+gesture? In that case the mask layer will stay deformed, but since we animate
+it out of view when the pan gesture ends this is not a problem.</p>
+
+<h3 id="wrapping-up">Wrapping up</h3>
+
+<p>Thanks to the power of masks and snapshots, a lot of cool animations and
+transitions can be implemented quite easily. Trying to recreate animations or
+transitions you see in other applications is a great way to gain a better
+understanding of how these tools can be used and what they can achieve.</p>
+
+<p>Hopefully this post has given you a better understanding of how Supertop has
+implemented the Night Mode transition in Castro 2. Don&rsquo;t forget to check out the
+code in the <a href="https://github.com/boerworz/NightModeTransition">NightModeTransition GitHub repository</a> for some details that
+I didn&rsquo;t mention in the post, and to try out the demo application for yourself!</p>
+
+<p>If you have any questions or feedback about this post, you can reach out to me
+on Twitter at <a href="https://twitter.com/boerworz">@boerworz</a>.</p>
+
+                </div>
+                <div class="feat share">
+                    <a href="//twitter.com/share" class="popup">
+                        <span class="icon-twitter"></span>
+                    </a>
+                </div>
+                
+				<div id="post-navigation">
+					
+					
+						<a rel="prev" href="http://ndersson.me/post/capturing_status_code_in_net_http/" id="prev">
+							&larr;<span class="nav-title nav-title-prev">[Go] Capturing the HTTP status code from http.ResponseWriter</span>
+						</a>
+					
+				</div>
+
+				
+
+            </article>
+        </section>
+
+        <footer>
+	
+	<small>Powered by <a href="//gohugo.io">Hugo</a> - Theme based on <a href="//github.com/digitalcraftsman/hugo-hikari-theme">Hikari</a> - © Tim Andersson</small>
+	
+</footer>
+    </div>
+    
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://ndersson.me/js/main.js"></script>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-71992214-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+<!-- Syntax highlighting -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>
