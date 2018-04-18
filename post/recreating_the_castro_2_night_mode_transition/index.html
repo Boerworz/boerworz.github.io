@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="author" content="Tim Andersson">
     <meta name="description" content="A little bit of code.">
-    <meta name="generator" content="Hugo 0.16" />
+    <meta name="generator" content="Hugo 0.38.2" />
 
     <!-- Stylesheets -->
     <link rel="stylesheet" type="text/css" href="http://ndersson.me/css/main.css" />
@@ -132,7 +132,7 @@ so that we can easily support different visual modes.</p>
 configuration model for each component (view controller, table view, cells) that
 had to support a different style:</p>
 
-<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span></span><span class="kd">struct</span> <span class="nc">ViewControllerStyle</span> <span class="p">{</span>
+<div class="highlight"><pre class="chroma"><code class="language-swift" data-lang="swift"><span class="kd">struct</span> <span class="nc">ViewControllerStyle</span> <span class="p">{</span>
     <span class="kd">var</span> <span class="nv">navigationBarStyle</span><span class="p">:</span> <span class="n">UIBarStyle</span>
     <span class="kd">var</span> <span class="nv">statusBarStyle</span><span class="p">:</span> <span class="n">UIStatusBarStyle</span>
     <span class="kd">var</span> <span class="nv">tableViewStyle</span><span class="p">:</span> <span class="n">TableViewStyle</span>
@@ -142,8 +142,8 @@ had to support a different style:</p>
 <span class="p">}</span>
 
 <span class="kd">struct</span> <span class="nc">TableViewStyle</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nv">backgroundColor</span><span class="p">:</span> <span class="bp">UIColor</span>
-    <span class="kd">var</span> <span class="nv">separatorColor</span><span class="p">:</span> <span class="bp">UIColor</span><span class="p">?</span>
+    <span class="kd">var</span> <span class="nv">backgroundColor</span><span class="p">:</span> <span class="n">UIColor</span>
+    <span class="kd">var</span> <span class="nv">separatorColor</span><span class="p">:</span> <span class="n">UIColor</span><span class="p">?</span>
     <span class="kd">var</span> <span class="nv">cellStyle</span><span class="p">:</span> <span class="n">CellStyle</span>
 
     <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Dark</span> <span class="p">=</span> <span class="n">TableViewStyle</span><span class="p">(...)</span>
@@ -151,14 +151,12 @@ had to support a different style:</p>
 <span class="p">}</span>
 
 <span class="kd">struct</span> <span class="nc">CellStyle</span> <span class="p">{</span>
-    <span class="kd">var</span> <span class="nv">backgroundColor</span><span class="p">:</span> <span class="bp">UIColor</span>
-    <span class="kd">var</span> <span class="nv">textColor</span><span class="p">:</span> <span class="bp">UIColor</span>
+    <span class="kd">var</span> <span class="nv">backgroundColor</span><span class="p">:</span> <span class="n">UIColor</span>
+    <span class="kd">var</span> <span class="nv">textColor</span><span class="p">:</span> <span class="n">UIColor</span>
 
     <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Light</span> <span class="p">=</span> <span class="n">CellStyle</span><span class="p">(...)</span>
     <span class="kd">static</span> <span class="kd">let</span> <span class="nv">Dark</span> <span class="p">=</span> <span class="n">CellStyle</span><span class="p">(...)</span>
-<span class="p">}</span>
-</code></pre></div>
-
+<span class="p">}</span></code></pre></div>
 
 <p>As you can see, nesting configuration models works very well. To apply the
 different styles I simply implemented an <code>apply(style:)</code> method in the <a href="https://github.com/Boerworz/NightModeTransition/blob/master/NightModeTransition/ArchiveViewController.swift#L300-L307">view
@@ -168,11 +166,9 @@ controller</a> and the <a href="https://github.com/Boerworz/NightModeTransition/
 mode we&rsquo;re currently displaying. The simplest way of doing this is letting the
 view controller keep track of if we&rsquo;re using the dark mode or not:</p>
 
-<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span></span><span class="kd">private</span> <span class="kd">var</span> <span class="nv">useDarkMode</span> <span class="p">=</span> <span class="kc">false</span> <span class="p">{</span>
+<div class="highlight"><pre class="chroma"><code class="language-swift" data-lang="swift"><span class="kd">private</span> <span class="kd">var</span> <span class="nv">useDarkMode</span> <span class="p">=</span> <span class="kc">false</span> <span class="p">{</span>
     <span class="kr">didSet</span> <span class="p">{</span> <span class="n">currentStyle</span> <span class="p">=</span> <span class="n">useDarkMode</span> <span class="p">?</span> <span class="p">.</span><span class="n">Dark</span> <span class="p">:</span> <span class="p">.</span><span class="n">Light</span> <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-
+<span class="p">}</span></code></pre></div>
 
 <p>With that done, we have an application that supports a <em>Light</em> mode and a <em>Dark</em>
 mode, and we can toggle the current mode by changing the value of <code>useDarkMode</code>.</p>
@@ -248,14 +244,14 @@ code required for this is pretty simple. We configure a pan gesture recognizer
 to only recognize two-finger pans, and then act on the state of the recognizer
 when the recognizer changes:</p>
 
-<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span></span><span class="kd">private</span> <span class="kd">func</span> <span class="nf">setupPanGestureRecognizer</span><span class="p">()</span> <span class="p">{</span>
-    <span class="kd">let</span> <span class="nv">panRecognizer</span> <span class="p">=</span> <span class="bp">UIPanGestureRecognizer</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="kc">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="p">#</span><span class="n">selector</span><span class="p">(</span><span class="n">panRecognizerDidChange</span><span class="p">(</span><span class="kc">_</span><span class="p">:)))</span>
+<div class="highlight"><pre class="chroma"><code class="language-swift" data-lang="swift"><span class="kd">private</span> <span class="kd">func</span> <span class="nf">setupPanGestureRecognizer</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nv">panRecognizer</span> <span class="p">=</span> <span class="n">UIPanGestureRecognizer</span><span class="p">(</span><span class="n">target</span><span class="p">:</span> <span class="kc">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="k">#selector</span><span class="p">(</span><span class="n">panRecognizerDidChange</span><span class="p">(</span><span class="kc">_</span><span class="p">:)))</span>
     <span class="n">panRecognizer</span><span class="p">.</span><span class="n">maximumNumberOfTouches</span> <span class="p">=</span> <span class="mi">2</span>
     <span class="n">panRecognizer</span><span class="p">.</span><span class="n">minimumNumberOfTouches</span> <span class="p">=</span> <span class="mi">2</span>
     <span class="n">tableView</span><span class="p">.</span><span class="n">addGestureRecognizer</span><span class="p">(</span><span class="n">panRecognizer</span><span class="p">)</span>
 <span class="p">}</span>
 
-<span class="kd">func</span> <span class="nf">panRecognizerDidChange</span><span class="p">(</span><span class="n">panRecognizer</span><span class="p">:</span> <span class="bp">UIPanGestureRecognizer</span><span class="p">)</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="nf">panRecognizerDidChange</span><span class="p">(</span><span class="n">panRecognizer</span><span class="p">:</span> <span class="n">UIPanGestureRecognizer</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">switch</span> <span class="n">panRecognizer</span><span class="p">.</span><span class="n">state</span> <span class="p">{</span>
     <span class="k">case</span> <span class="p">.</span><span class="n">Began</span><span class="p">:</span>
         <span class="n">beginInteractiveStyleTransition</span><span class="p">(</span><span class="n">withPanRecognizer</span><span class="p">:</span> <span class="n">panRecognizer</span><span class="p">)</span>
@@ -265,9 +261,7 @@ when the recognizer changes:</p>
         <span class="n">endInteractiveStyleTransition</span><span class="p">(</span><span class="n">withPanRecognizer</span><span class="p">:</span> <span class="n">panRecognizer</span><span class="p">)</span>
     <span class="k">default</span><span class="p">:</span> <span class="k">break</span>
     <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-
+<span class="p">}</span></code></pre></div>
 
 <p>The three functions called from <code>panRecognizerDidChange(_:)</code> all implement part
 of the aforementioned outline.
@@ -301,12 +295,12 @@ most obvious choice is for us to use a <code>CAShapeLayer</code> as the mask lay
 When <code>panRecognizerDidChange(_:)</code> is called, we call a method that updates the
 path property of the mask layer:</p>
 
-<div class="highlight"><pre><code class="language-swift" data-lang="swift"><span></span><span class="kd">private</span> <span class="kd">func</span> <span class="nf">adjustMaskLayerPath</span><span class="p">(</span><span class="n">basedOn</span> <span class="n">panRecognizer</span><span class="p">:</span> <span class="bp">UIPanGestureRecognizer</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">guard</span> <span class="kd">let</span> <span class="nv">window</span> <span class="p">=</span> <span class="n">tableView</span><span class="p">.</span><span class="n">window</span> <span class="k">else</span> <span class="p">{</span>
+<div class="highlight"><pre class="chroma"><code class="language-swift" data-lang="swift"><span class="kd">private</span> <span class="kd">func</span> <span class="nf">adjustMaskLayerPath</span><span class="p">(</span><span class="n">basedOn</span> <span class="n">panRecognizer</span><span class="p">:</span> <span class="n">UIPanGestureRecognizer</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">guard</span> <span class="kd">let</span> <span class="nv">window</span> <span class="p">=</span> <span class="n">tableView</span><span class="p">.</span><span class="n">window</span> <span class="k">else</span> <span class="p">{</span>
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="kd">let</span> <span class="nv">maskingPath</span> <span class="p">=</span> <span class="bp">UIBezierPath</span><span class="p">()</span>
+    <span class="kd">let</span> <span class="nv">maskingPath</span> <span class="p">=</span> <span class="n">UIBezierPath</span><span class="p">()</span>
 
     <span class="c1">// Top-left corner...</span>
     <span class="n">maskingPath</span><span class="p">.</span><span class="n">moveToPoint</span><span class="p">(.</span><span class="n">zero</span><span class="p">)</span>
@@ -315,23 +309,21 @@ path property of the mask layer:</p>
     <span class="kd">let</span> <span class="nv">damping</span><span class="p">:</span> <span class="n">CGFloat</span> <span class="p">=</span> <span class="mf">45.0</span>
     <span class="kd">let</span> <span class="nv">verticalOffset</span> <span class="p">=</span> <span class="n">panRecognizer</span><span class="p">.</span><span class="n">velocityInView</span><span class="p">(</span><span class="n">window</span><span class="p">).</span><span class="n">y</span> <span class="o">/</span> <span class="n">damping</span>
     <span class="n">maskingPath</span><span class="p">.</span><span class="n">addQuadCurveToPoint</span><span class="p">(</span>
-    	<span class="bp">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">),</span> 
-    	<span class="n">controlPoint</span><span class="p">:</span> <span class="bp">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">midX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">verticalOffset</span><span class="p">)</span>
+    	<span class="n">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">),</span> 
+    	<span class="n">controlPoint</span><span class="p">:</span> <span class="n">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">midX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">verticalOffset</span><span class="p">)</span>
     <span class="p">)</span>
 
     <span class="c1">// ...to bottom-right corner...</span>
-    <span class="n">maskingPath</span><span class="p">.</span><span class="n">addLineToPoint</span><span class="p">(</span><span class="bp">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxY</span><span class="p">))</span>
+    <span class="n">maskingPath</span><span class="p">.</span><span class="n">addLineToPoint</span><span class="p">(</span><span class="n">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxX</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxY</span><span class="p">))</span>
 
     <span class="c1">// ...to bottom-left corner...</span>
-    <span class="n">maskingPath</span><span class="p">.</span><span class="n">addLineToPoint</span><span class="p">(</span><span class="bp">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxY</span><span class="p">))</span>
+    <span class="n">maskingPath</span><span class="p">.</span><span class="n">addLineToPoint</span><span class="p">(</span><span class="n">CGPoint</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">window</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">maxY</span><span class="p">))</span>
 
     <span class="c1">// ...and close the path.</span>
     <span class="n">maskingPath</span><span class="p">.</span><span class="n">closePath</span><span class="p">()</span>
 
-    <span class="n">snapshotMaskLayer</span><span class="p">?.</span><span class="n">path</span> <span class="p">=</span> <span class="n">maskingPath</span><span class="p">.</span><span class="bp">CGPath</span>
-<span class="p">}</span>
-</code></pre></div>
-
+    <span class="n">snapshotMaskLayer</span><span class="p">?.</span><span class="n">path</span> <span class="p">=</span> <span class="n">maskingPath</span><span class="p">.</span><span class="n">CGPath</span>
+<span class="p">}</span></code></pre></div>
 
 <p>The most important part of this code are the lines that draw a quad curve using
 a control point whose vertical position is based on the velocity of the pan
@@ -381,6 +373,10 @@ on Twitter at <a href="https://twitter.com/boerworz">@boerworz</a>.</p>
                 
 				<div id="post-navigation">
 					
+						<a rel="next" href="http://ndersson.me/post/byte_patching_xcode/" id="next">
+							<span class="nav-title nav-title-next">Byte patching Xcode 9.3 to get back the dark appearance of the Open Quickly menu</span>&rarr;
+						</a>
+					
 					
 						<a rel="prev" href="http://ndersson.me/post/capturing_status_code_in_net_http/" id="prev">
 							&larr;<span class="nav-title nav-title-prev">[Go] Capturing the HTTP status code from http.ResponseWriter</span>
@@ -408,7 +404,7 @@ on Twitter at <a href="https://twitter.com/boerworz">@boerworz</a>.</p>
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'UA-71992214-1', 'auto');
 ga('send', 'pageview');

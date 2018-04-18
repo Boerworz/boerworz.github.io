@@ -6,8 +6,19 @@
     <description>Recent content in Posts on ndersson.me</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 17 Aug 2016 11:13:24 +0200</lastBuildDate>
-    <atom:link href="http://ndersson.me/post/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 15 Apr 2018 14:34:13 +0200</lastBuildDate>
+    
+	<atom:link href="http://ndersson.me/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Byte patching Xcode 9.3 to get back the dark appearance of the Open Quickly menu</title>
+      <link>http://ndersson.me/post/byte_patching_xcode/</link>
+      <pubDate>Sun, 15 Apr 2018 14:34:13 +0200</pubDate>
+      
+      <guid>http://ndersson.me/post/byte_patching_xcode/</guid>
+      <description>If you&amp;rsquo;re a frequent user of the Open Quickly feature in Xcode, and you use a dark menu bar and Dock, then you might have noticed that the appearance of the Open Quickly window changed in Xcode 9.3. In versions prior to Xcode 9.3 the Open Quickly window would use a dark theme if you used a dark menu bar and Dock, but the Open Quickly window in Xcode 9.</description>
+    </item>
     
     <item>
       <title>Recreating the Castro 2 Night Mode Transition</title>
@@ -15,303 +26,8 @@
       <pubDate>Wed, 17 Aug 2016 11:13:24 +0200</pubDate>
       
       <guid>http://ndersson.me/post/recreating_the_castro_2_night_mode_transition/</guid>
-      <description>
-
-&lt;p&gt;&lt;a href=&#34;http://supertop.co&#34;&gt;Supertop&lt;/a&gt; recently released version 2.0 of their podcast
-player for iOS, &lt;a href=&#34;http://supertop.co/castro/&#34;&gt;Castro&lt;/a&gt;. When I watched the
-&lt;a href=&#34;http://supertop.co/castro/#trailer&#34;&gt;trailer&lt;/a&gt;, the &lt;em&gt;Night Mode&lt;/em&gt; feature in
-particular caught my eye. Rather, the way the feature was enabled is what
-caught my eye. If you watch the trailer, you&amp;rsquo;ll see that &lt;em&gt;Night Mode&lt;/em&gt; is enabled
-by swiping down with two fingers from any screen, and that the transition is
-super-slick and seamless.&lt;/p&gt;
-
-&lt;p&gt;Since I really liked the transition, I thought it would be an interesting
-challenge to see if I could recreate it. It turned out not to be too difficult,
-and in this post I will be detailing how I managed to recreate the transition.
-If you just want to see the code, head on over to the
-&lt;a href=&#34;https://github.com/boerworz/NightModeTransition&#34;&gt;NightModeTransition GitHub repository&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;&lt;strong&gt;Note:&lt;/strong&gt; Before you continue reading this post, you should make sure you&amp;rsquo;ve
-watched either the &lt;a href=&#34;http://supertop.co/castro/#trailer&#34;&gt;Castro 2 trailer&lt;/a&gt; or
-&lt;a href=&#34;https://github.com/Boerworz/NightModeTransition/raw/master/transition.gif&#34;&gt;the gif&lt;/a&gt; from the &lt;code&gt;NightModeTransition&lt;/code&gt; repository, otherwise this
-post probably won&amp;rsquo;t make very much sense.&lt;/em&gt;&lt;/p&gt;
-
-&lt;h3 id=&#34;let-s-get-started&#34;&gt;Let&amp;rsquo;s get started&lt;/h3&gt;
-
-&lt;p&gt;There&amp;rsquo;s basically three parts or steps to recreating the demo application in the
-&lt;a href=&#34;https://github.com/boerworz/NightModeTransition&#34;&gt;NightModeTransition GitHub repository&lt;/a&gt;. First we will put together a
-small application with some dummy content that supports different visual styles.
-Then we will implement the actual two-finger pan transition but without the
-bounciness. Finally, we will add the bounciness or stretchiness that makes the
-transition a lot cooler.&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;&lt;strong&gt;Note&lt;/strong&gt;: I will gloss over some of the simpler and more mundane steps in this
-post since the focus is on how the transition is implemented, not on how to
-build an application from scratch.&lt;/em&gt;&lt;/p&gt;
-
-&lt;h4 id=&#34;1-creating-the-basic-application&#34;&gt;1. Creating the basic application&lt;/h4&gt;
-
-&lt;p&gt;To show off the transition, we need an application that supports at least two
-different visual modes. The content of the application doesn&amp;rsquo;t really matter,
-but to get the most out of the transition the application should contain a few
-different UI elements.&lt;/p&gt;
-
-&lt;p&gt;Since I was trying to recreate the transition from Castro I figured I might as
-well make the application look similar to Castro. I used a
-&lt;code&gt;UITableViewController&lt;/code&gt; with a grouped table view and static cells, embedded in
-a &lt;code&gt;UINavigationController&lt;/code&gt;. The cells use a custom &lt;code&gt;UITableViewCell&lt;/code&gt; subclass
-so that we can easily support different visual modes.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&#34;http://ndersson.me/img/nightmodetransition_app.png&#34; alt=&#34;The NightModeTransition app&#34; /&gt;&lt;/p&gt;
-
-&lt;h5 id=&#34;supporting-different-modes&#34;&gt;Supporting different modes&lt;/h5&gt;
-
-&lt;p&gt;To support different modes (i.e. a Light and a Dark mode), I ended up using
-&lt;em&gt;configuration models&lt;/em&gt; which Jesse Squires recently
-&lt;a href=&#34;http://www.jessesquires.com/enums-as-configs/&#34;&gt;wrote about&lt;/a&gt;. I created a
-configuration model for each component (view controller, table view, cells) that
-had to support a different style:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;ViewControllerStyle&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;navigationBarStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;UIBarStyle&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;statusBarStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;UIStatusBarStyle&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;tableViewStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TableViewStyle&lt;/span&gt;
-
-    &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;Dark&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ViewControllerStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(...)&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;Light&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ViewControllerStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(...)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;TableViewStyle&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;backgroundColor&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;UIColor&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;separatorColor&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;UIColor&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;?&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;cellStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CellStyle&lt;/span&gt;
-
-    &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;Dark&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TableViewStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(...)&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;Light&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TableViewStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(...)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;CellStyle&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;backgroundColor&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;UIColor&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;textColor&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;UIColor&lt;/span&gt;
-
-    &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;Light&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CellStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(...)&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;Dark&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CellStyle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(...)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;As you can see, nesting configuration models works very well. To apply the
-different styles I simply implemented an &lt;code&gt;apply(style:)&lt;/code&gt; method in the &lt;a href=&#34;https://github.com/Boerworz/NightModeTransition/blob/master/NightModeTransition/ArchiveViewController.swift#L300-L307&#34;&gt;view
-controller&lt;/a&gt; and the &lt;a href=&#34;https://github.com/Boerworz/NightModeTransition/blob/master/NightModeTransition/ArchiveTableCellView.swift#L36-L39&#34;&gt;cell subclass&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;In order to transition between the modes in the future we also need to now what
-mode we&amp;rsquo;re currently displaying. The simplest way of doing this is letting the
-view controller keep track of if we&amp;rsquo;re using the dark mode or not:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;var&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;useDarkMode&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;false&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;kr&#34;&gt;didSet&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;currentStyle&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;useDarkMode&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;?&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Dark&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Light&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;With that done, we have an application that supports a &lt;em&gt;Light&lt;/em&gt; mode and a &lt;em&gt;Dark&lt;/em&gt;
-mode, and we can toggle the current mode by changing the value of &lt;code&gt;useDarkMode&lt;/code&gt;.&lt;/p&gt;
-
-&lt;h4 id=&#34;2-transitioning-between-modes&#34;&gt;2. Transitioning between modes&lt;/h4&gt;
-
-&lt;p&gt;The cool part of the transition is how there&amp;rsquo;s a border where anything above
-the border uses the new mode, and anything below the border uses the current
-mode. Panning so that the border ends up in the middle of some text means that
-the top half of the text will be one color and the bottom half will be another.
-Whenever you see something like this, you should immediately think &lt;em&gt;&amp;ldquo;Mask!&amp;rdquo;&lt;/em&gt;.&lt;/p&gt;
-
-&lt;h5 id=&#34;mask-layers&#34;&gt;Mask layers&lt;/h5&gt;
-
-&lt;p&gt;All &lt;code&gt;CALayer&lt;/code&gt;s have a &lt;code&gt;var mask: CALayer?&lt;/code&gt; property (since iOS 8, all &lt;code&gt;UIView&lt;/code&gt;s
-have a &lt;code&gt;maskView&lt;/code&gt; property as well). A mask layer lets us display part of a
-layer&amp;rsquo;s contents. From &lt;a href=&#34;https://developer.apple.com/library/mac/documentation/GraphicsImaging/Reference/CALayer_class/#//apple_ref/occ/instp/CALayer/mask&#34;&gt;Apple&amp;rsquo;s documentation&lt;/a&gt;:&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;The [mask] layer’s alpha channel determines how much of the layer’s content and
-background shows through. Fully or partially opaque pixels allow the underlying
-content to show through but fully transparent pixels block that content.&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;Armed with this knowledge, we can surmise that the people at Supertop are using
-a mask to implement the transition. But wait, if we can only use the mask to
-selectively display part of a layer, how are they using it to display two
-different versions of the same UI simultaneously? The solution is to use the
-mask in combination with a &lt;em&gt;snapshot view&lt;/em&gt;!&lt;/p&gt;
-
-&lt;h5 id=&#34;snapshot-views&#34;&gt;Snapshot views&lt;/h5&gt;
-
-&lt;p&gt;iOS 7.0 introduced the concept of &lt;em&gt;snapshot views&lt;/em&gt; along with the new method
-&lt;code&gt;UIView.snapshotViewAfterScreenUpdates(_:)&lt;/code&gt;. Snapshot views let us capture the
-current rendered appearance of a &lt;code&gt;UIView&lt;/code&gt; in the form of a special &lt;code&gt;UIView&lt;/code&gt;
-object. By calling &lt;code&gt;UIView.snapshotViewAfterScreenUpdates(_:)&lt;/code&gt;, we get back a
-view object that looks just like the receiver and that we can use like any other
-view. This is very useful in our case since it lets us capture the appearance
-of the view hierarchy in the current mode before we apply the new mode.&lt;/p&gt;
-
-&lt;h5 id=&#34;putting-the-mask-and-snapshot-together&#34;&gt;Putting the mask and snapshot together&lt;/h5&gt;
-
-&lt;p&gt;Now we know what masks are and snapshots are, but how do we use them together to
-implement the transition? Well, it&amp;rsquo;s not too complicated. The outline
-of the implementation is as follows:&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;When the transition begins, take a snapshot of the view hierarchy in its
-current state.&lt;/li&gt;
-&lt;li&gt;Place the snapshot on top of all other content.&lt;/li&gt;
-&lt;li&gt;Apply the new mode to the view hierarchy using &lt;code&gt;useDarkMode&lt;/code&gt;. This will not
-be visible immediately since the snapshot is covering the underlying content.&lt;/li&gt;
-&lt;li&gt;Create an opaque mask layer that has the same size as the snapshot, and use
-it as the mask for the snapshot. Initially, only the snapshot view will be
-visible.&lt;/li&gt;
-&lt;li&gt;As the transition progresses, move the mask layer to reveal more of the
-underlying content (which is using the new mode).&lt;/li&gt;
-&lt;li&gt;When the transition completes, we animate the mask layer to its final
-position to reveal the entire underlying content.&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Note that the snapshot view is never moved; we only move the mask layer. This is
-what gives us the cool, seamless transition. The top edge of the mask layer is
-the border that separates the new mode from the previous mode. If we would move
-the snapshot, the two different versions of the UI wouldn&amp;rsquo;t overlap perfectly
-and everything would look very strange.&lt;/p&gt;
-
-&lt;p&gt;To drive the transition we will be using a &lt;code&gt;UIPanGestureRecognizer&lt;/code&gt;, which
-brings us to our next section.&lt;/p&gt;
-
-&lt;h5 id=&#34;panning-and-progressing&#34;&gt;Panning and progressing&lt;/h5&gt;
-
-&lt;p&gt;The transition is entirely driven by a &lt;code&gt;UIPanGestureRecognizer&lt;/code&gt;, and the
-code required for this is pretty simple. We configure a pan gesture recognizer
-to only recognize two-finger pans, and then act on the state of the recognizer
-when the recognizer changes:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;setupPanGestureRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;panRecognizer&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;UIPanGestureRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;target&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;self&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;action&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;#&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;selector&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;panRecognizerDidChange&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;_&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:)))&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;maximumNumberOfTouches&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;minimumNumberOfTouches&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mi&#34;&gt;2&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;tableView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;addGestureRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;panRecognizerDidChange&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;UIPanGestureRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;switch&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;state&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Began&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;beginInteractiveStyleTransition&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;withPanRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Changed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;adjustMaskLayer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;basedOn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;case&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Ended&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Failed&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt;
-        &lt;span class=&#34;n&#34;&gt;endInteractiveStyleTransition&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;withPanRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;default&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;break&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;The three functions called from &lt;code&gt;panRecognizerDidChange(_:)&lt;/code&gt; all implement part
-of the aforementioned outline.
-&lt;code&gt;beginInteractiveStyleTransition(withPanRecognizer:)&lt;/code&gt; performs steps 1-4,
-&lt;code&gt;adjustMaskLayer(basedOn:)&lt;/code&gt; is responsible for step 5, and step 6 is done by
-&lt;code&gt;endInteractiveStyleTransition(withPanRecognizer:)&lt;/code&gt;.&lt;/p&gt;
-
-&lt;p&gt;Pretty simple! With that we have an application where we can use a two-finger
-pan gesture to interactively transition between the &lt;em&gt;Light&lt;/em&gt; and &lt;em&gt;Dark&lt;/em&gt; mode. All
-we need now is to add some stretchiness to make the transition feel less rigid.&lt;/p&gt;
-
-&lt;h4 id=&#34;3-making-it-stretch&#34;&gt;3. Making it stretch&lt;/h4&gt;
-
-&lt;p&gt;This was the trickiest part of the transition. I spent almost two hours trying
-to figure out how they deformed the mask layer, experimenting with
-&lt;a href=&#34;https://github.com/victorBaro/VBFJellyView&#34;&gt;UIDynamics&lt;/a&gt; and &lt;a href=&#34;https://github.com/fastred/AHKBendableView&#34;&gt;spring animations&lt;/a&gt;, until I finally
-stumbled upon the solution practically by accident.&lt;/p&gt;
-
-&lt;p&gt;I knew that I most likely needed to use the velocity from the pan gesture
-recognizer to deform the mask layer, but I wasn&amp;rsquo;t sure how to get the mask to
-return to its non-deformed state when the user stopped moving their fingers.
-After writing the code to deform the mask based on the velocity, it turned out
-that no more code was needed due to how and when the
-&lt;code&gt;panRecognizerDidChange(_:)&lt;/code&gt; method is called.&lt;/p&gt;
-
-&lt;h5 id=&#34;deforming-the-mask-layer&#34;&gt;Deforming the mask layer&lt;/h5&gt;
-
-&lt;p&gt;Since we want to change the shape of the mask layer based on the velocity of the
-pan gesture recognizer, and the shape we want to achieve is non-rectangular, the
-most obvious choice is for us to use a &lt;code&gt;CAShapeLayer&lt;/code&gt; as the mask layer.
-When &lt;code&gt;panRecognizerDidChange(_:)&lt;/code&gt; is called, we call a method that updates the
-path property of the mask layer:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-swift&#34; data-lang=&#34;swift&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;adjustMaskLayerPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;basedOn&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;UIPanGestureRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;guard&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;window&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;tableView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;window&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;else&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-        &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;maskingPath&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;UIBezierPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-
-    &lt;span class=&#34;c1&#34;&gt;// Top-left corner...&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;maskingPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;moveToPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;zero&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-    &lt;span class=&#34;c1&#34;&gt;// ...arc to top-right corner...&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;damping&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;CGFloat&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;45.0&lt;/span&gt;
-    &lt;span class=&#34;kd&#34;&gt;let&lt;/span&gt; &lt;span class=&#34;nv&#34;&gt;verticalOffset&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;panRecognizer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;velocityInView&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;window&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;).&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;y&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;/&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;damping&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;maskingPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;addQuadCurveToPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
-    	&lt;span class=&#34;bp&#34;&gt;CGPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;window&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bounds&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;maxX&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;y&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;0.0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;),&lt;/span&gt; 
-    	&lt;span class=&#34;n&#34;&gt;controlPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;bp&#34;&gt;CGPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;window&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bounds&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;midX&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;y&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;verticalOffset&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-    &lt;span class=&#34;c1&#34;&gt;// ...to bottom-right corner...&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;maskingPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;addLineToPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;CGPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;window&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bounds&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;maxX&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;y&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;window&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bounds&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;maxY&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-
-    &lt;span class=&#34;c1&#34;&gt;// ...to bottom-left corner...&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;maskingPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;addLineToPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;CGPoint&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;x&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;mf&#34;&gt;0.0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;y&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;:&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;window&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;bounds&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;maxY&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-
-    &lt;span class=&#34;c1&#34;&gt;// ...and close the path.&lt;/span&gt;
-    &lt;span class=&#34;n&#34;&gt;maskingPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;closePath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt;
-
-    &lt;span class=&#34;n&#34;&gt;snapshotMaskLayer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;?.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;path&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;maskingPath&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;bp&#34;&gt;CGPath&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;The most important part of this code are the lines that draw a quad curve using
-a control point whose vertical position is based on the velocity of the pan
-gesture recognizer. The larger the vertical velocity, the further from the edge
-of the mask layer the control point will end up, resulting in a more pronounced
-curve.&lt;/p&gt;
-
-&lt;h5 id=&#34;returning-the-mask-layer-to-its-non-deformed-state&#34;&gt;Returning the mask layer to its non-deformed state&lt;/h5&gt;
-
-&lt;p&gt;As I mentioned earlier, it turns out that we don&amp;rsquo;t need any special code to
-return the mask layer to its non-deformed state! This is due to the fact that
-the pan gesture recognizer&amp;rsquo;s target selector (&lt;code&gt;panRecognizerDidChange(_:)&lt;/code&gt; in
-our case) keeps getting called periodically when the user stops moving their
-fingers (but keeps them on the screen) until the calculated velocity reaches
-zero. Since we change the shape layer&amp;rsquo;s path based on the velocity, decreasing
-the velocity will also decrease the deformation. This is what gives us the nice
-effect of the edges of the mask layer catching up with the center of the mask
-layer when the user stops moving their finger. Pretty sweet!&lt;/p&gt;
-
-&lt;p&gt;The astute reader might have noticed that I only mentioned the scenario in which
-the user stops moving their fingers but keeps them on the screen. What happens
-if the user lifts their fingers off the screen in the middle of the panning
-gesture? In that case the mask layer will stay deformed, but since we animate
-it out of view when the pan gesture ends this is not a problem.&lt;/p&gt;
-
-&lt;h3 id=&#34;wrapping-up&#34;&gt;Wrapping up&lt;/h3&gt;
-
-&lt;p&gt;Thanks to the power of masks and snapshots, a lot of cool animations and
-transitions can be implemented quite easily. Trying to recreate animations or
-transitions you see in other applications is a great way to gain a better
-understanding of how these tools can be used and what they can achieve.&lt;/p&gt;
-
-&lt;p&gt;Hopefully this post has given you a better understanding of how Supertop has
-implemented the Night Mode transition in Castro 2. Don&amp;rsquo;t forget to check out the
-code in the &lt;a href=&#34;https://github.com/boerworz/NightModeTransition&#34;&gt;NightModeTransition GitHub repository&lt;/a&gt; for some details that
-I didn&amp;rsquo;t mention in the post, and to try out the demo application for yourself!&lt;/p&gt;
-
-&lt;p&gt;If you have any questions or feedback about this post, you can reach out to me
-on Twitter at &lt;a href=&#34;https://twitter.com/boerworz&#34;&gt;@boerworz&lt;/a&gt;.&lt;/p&gt;
-</description>
+      <description>Supertop recently released version 2.0 of their podcast player for iOS, Castro. When I watched the trailer, the Night Mode feature in particular caught my eye. Rather, the way the feature was enabled is what caught my eye. If you watch the trailer, you&amp;rsquo;ll see that Night Mode is enabled by swiping down with two fingers from any screen, and that the transition is super-slick and seamless.
+Since I really liked the transition, I thought it would be an interesting challenge to see if I could recreate it.</description>
     </item>
     
     <item>
@@ -320,177 +36,7 @@ on Twitter at &lt;a href=&#34;https://twitter.com/boerworz&#34;&gt;@boerworz&lt;
       <pubDate>Thu, 03 Mar 2016 20:45:46 +0100</pubDate>
       
       <guid>http://ndersson.me/post/capturing_status_code_in_net_http/</guid>
-      <description>
-
-&lt;p&gt;I&amp;rsquo;ve slowly but surely been learning &lt;a href=&#34;http://golang.org&#34;&gt;Go&lt;/a&gt; over the past few
-months, and I recently began working on a web service in my spare time. Go comes
-with a great builtin package for building web services, &lt;a href=&#34;https://golang.org/pkg/net/http&#34;&gt;net/http&lt;/a&gt;, and
-in this post I&amp;rsquo;ll cover how to wrap the &lt;code&gt;http.ResponseWriter&lt;/code&gt; type to capture
-the HTTP status code from the response. This is useful if you need to log the
-status code after the response handler has completed. If you need to keep track
-of any other part of the response, this approach can easily be extended.&lt;/p&gt;
-
-&lt;h4 id=&#34;getting-started&#34;&gt;Getting started&lt;/h4&gt;
-
-&lt;p&gt;To get things started, let&amp;rsquo;s put together a very basic web service that responds
-with a &lt;code&gt;404 Not Found&lt;/code&gt; to all requests except requests for the root:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kn&#34;&gt;package&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;main&lt;/span&gt;
-
-&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;
-    &lt;span class=&#34;s&#34;&gt;&amp;quot;fmt&amp;quot;&lt;/span&gt;
-    &lt;span class=&#34;s&#34;&gt;&amp;quot;log&amp;quot;&lt;/span&gt;
-    &lt;span class=&#34;s&#34;&gt;&amp;quot;net/http&amp;quot;&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;HandleFunc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;/&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;handleRoot&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-    &lt;span class=&#34;nx&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Fatal&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ListenAndServe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;:8080&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;handleRoot&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Request&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;if&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;URL&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Path&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;!=&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;quot;/&amp;quot;&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-        &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;NotFound&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-        &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-    &lt;span class=&#34;nx&#34;&gt;fmt&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Fprintf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;s&#34;&gt;&amp;quot;Hello, World!&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;After starting our service using &lt;code&gt;go run main.go&lt;/code&gt;, navigating to
-&lt;a href=&#34;http://localhost:8080/&#34;&gt;http://localhost:8080/&lt;/a&gt; should present us with &lt;code&gt;&amp;quot;Hello, World!&amp;quot;&lt;/code&gt;. If we navigate
-to &lt;a href=&#34;http://localhost:8080/foo&#34;&gt;any&lt;/a&gt; &lt;a href=&#34;http://localhost:8080/bar&#34;&gt;other&lt;/a&gt;
-&lt;a href=&#34;http://localhost:8080/baz&#34;&gt;path&lt;/a&gt;, we should get a 404.&lt;/p&gt;
-
-&lt;p&gt;Before we continue, take a moment to appreciate how easy it was to write that.
-We didn&amp;rsquo;t even have to install a &lt;code&gt;gem&lt;/code&gt; or a &lt;code&gt;pod&lt;/code&gt; or an &lt;code&gt;egg&lt;/code&gt;!&lt;/p&gt;
-
-&lt;h4 id=&#34;adding-logging&#34;&gt;Adding logging&lt;/h4&gt;
-
-&lt;p&gt;Now, to make things more interesting, we decide that we should log all requests.
-Our first idea is to create a function that takes a &lt;code&gt;http.Handler&lt;/code&gt; and wraps it,
-returning a new handler that logs some information about the request before
-invoking the wrapped handler:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;wrapHandlerWithLogging&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;wrappedHandler&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Handler&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Handler&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;HandlerFunc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Request&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-        &lt;span class=&#34;nx&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;--&amp;gt; %s %s&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Method&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;URL&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Path&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-        &lt;span class=&#34;nx&#34;&gt;wrapperHandler&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ServeHTTP&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;})&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;nx&#34;&gt;rootHandler&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;wrapHandlerWithLogging&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;HandlerFunc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;handleRoot&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-    &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Handle&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;/&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;rootHandler&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-    &lt;span class=&#34;nx&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Fatal&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ListenAndServe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;:8080&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;nil&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;This works just as one would expect. If we make a few requests to our server,
-we will see something along the following lines in our terminal:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span&gt;&lt;/span&gt;$ go run main.go
-2016/03/02 21:44:42 --&amp;gt; GET /
-2016/03/02 21:46:18 --&amp;gt; GET /foo
-2016/03/02 21:46:20 --&amp;gt; GET /bar
-2016/03/02 21:46:21 --&amp;gt; GET /baz
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;Pretty cool! However, it would be even cooler if we could log the response as
-well. We figure we can just add another &lt;code&gt;log.Printf&lt;/code&gt; after the call to
-&lt;code&gt;wrappedHandler.ServeHTTP&lt;/code&gt; to log the things we are interested in. An important
-and informative part of the response is the HTTP status code, so we look through
-the documentation for &lt;a href=&#34;https://golang.org/pkg/net/http/#ResponseWriter&#34;&gt;http.ResponseWriter&lt;/a&gt; to find out how to
-retrieve the status code. But wait… we quickly realize that &lt;code&gt;http.ResponseWriter&lt;/code&gt;
-doesn&amp;rsquo;t expose the status code! Will this be where our adventure with &lt;code&gt;net.http&lt;/code&gt;
-ends?&lt;/p&gt;
-
-&lt;p&gt;Of course not! After a closer look, we see that &lt;code&gt;ResponseWriter.WriteHeader&lt;/code&gt;
-takes the status code as an argument. If we could somehow intercept that method,
-then we could store the status code and use it for logging later.
-This is in fact possible, and quite easy to do at that. By creating a new struct
-that &lt;a href=&#34;https://golang.org/doc/effective_go.html#embedding&#34;&gt;embeds&lt;/a&gt; an &lt;code&gt;http.ResponseWriter&lt;/code&gt; we can implement the
-&lt;code&gt;WriteHeader&lt;/code&gt; method to store the status code in our new struct:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;type&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;loggingResponseWriter&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;struct&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ResponseWriter&lt;/span&gt;
-    &lt;span class=&#34;nx&#34;&gt;statusCode&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;NewLoggingResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;loggingResponseWriter&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;loggingResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;StatusOK&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-
-&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;lrw&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;loggingResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;WriteHeader&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;code&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;int&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;nx&#34;&gt;lrw&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;statusCode&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;code&lt;/span&gt;
-    &lt;span class=&#34;nx&#34;&gt;lrw&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;WriteHeader&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;code&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;When we have our new &lt;code&gt;loggingResponseWriter&lt;/code&gt; type, we simply need to make sure
-that our wrapped handler is passed a &lt;code&gt;loggingResponseWriter&lt;/code&gt; instead of the
-standard &lt;code&gt;http.ResponseWriter&lt;/code&gt;:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-go&#34; data-lang=&#34;go&#34;&gt;&lt;span&gt;&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;wrapHandlerWithLogging&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;wrappedHandler&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Handler&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Handler&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;HandlerFunc&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kd&#34;&gt;func&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Request&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt;
-        &lt;span class=&#34;nx&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;--&amp;gt; %s %s&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Method&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;URL&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Path&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-        &lt;span class=&#34;nx&#34;&gt;lrw&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;NewLoggingResponseWriter&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;w&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-        &lt;span class=&#34;nx&#34;&gt;wrappedHandler&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;ServeHTTP&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;lrw&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;
-
-        &lt;span class=&#34;nx&#34;&gt;statusCode&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;:=&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;lrw&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;statusCode&lt;/span&gt;
-        &lt;span class=&#34;nx&#34;&gt;log&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;Printf&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;quot;&amp;lt;-- %d %s&amp;quot;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;statusCode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;StatusText&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;statusCode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
-    &lt;span class=&#34;p&#34;&gt;})&lt;/span&gt;
-&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;If we run our service again and make some requests we will see that the HTTP
-status code from the response is now logged:&lt;/p&gt;
-
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;&lt;span&gt;&lt;/span&gt;$ go run main.go
-2016/03/03 20:17:53 --&amp;gt; GET /
-2016/03/03 20:17:53 &amp;lt;-- 200 OK
-2016/03/03 20:17:56 --&amp;gt; GET /foo
-2016/03/03 20:17:56 &amp;lt;-- 404 Not Found
-2016/03/03 20:17:57 --&amp;gt; GET /bar
-2016/03/03 20:17:57 &amp;lt;-- 404 Not Found
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;Just what we wanted!&lt;/p&gt;
-
-&lt;h4 id=&#34;summary&#34;&gt;Summary&lt;/h4&gt;
-
-&lt;p&gt;When I began working on this problem I was afraid that the code required to
-solve the problem would be complex and difficult to understand. However, it
-turns out that capturing the HTTP status code (or any other data, for that
-matter) from the response is quite simple and easy to reason about.&lt;/p&gt;
-
-&lt;p&gt;The approach discussed in this post gives a brief glimpse into how powerful
-wrapping an &lt;code&gt;http.Handler&lt;/code&gt; can be by making it easy to add functionality on top
-of existing handlers.
-Extending this approach to things like authorization is a natural next step, and
-combining it with &lt;a href=&#34;https://godoc.org/golang.org/x/net/context&#34;&gt;x/net/context&lt;/a&gt;
-makes it even more powerful.&lt;/p&gt;
-
-&lt;p&gt;If you want to try out the code with minimal effort I&amp;rsquo;ve created &lt;a href=&#34;https://gist.github.com/Boerworz/b683e46ae0761056a636&#34;&gt;a gist&lt;/a&gt;
-with the entirety of the code outlined in this post. It also includes some
-small comments about minor details that might not be entirely obvious from the
-post.&lt;/p&gt;
-
-&lt;p&gt;Until next time!&lt;/p&gt;
-</description>
+      <description>I&amp;rsquo;ve slowly but surely been learning Go over the past few months, and I recently began working on a web service in my spare time. Go comes with a great builtin package for building web services, net/http, and in this post I&amp;rsquo;ll cover how to wrap the http.ResponseWriter type to capture the HTTP status code from the response. This is useful if you need to log the status code after the response handler has completed.</description>
     </item>
     
     <item>
@@ -499,48 +45,8 @@ post.&lt;/p&gt;
       <pubDate>Mon, 04 Jan 2016 17:52:29 +0100</pubDate>
       
       <guid>http://ndersson.me/post/that_time_of_the_year/</guid>
-      <description>&lt;p&gt;It&amp;rsquo;s that time of the year. The &lt;em&gt;I-should-create-a-blog&lt;/em&gt; time of the year.&lt;/p&gt;
-
-&lt;p&gt;Nearly two years ago, at the beginning of 2014, I figured it was time to get
-into the blogging game. I did some research on what the most popular static site
-generator was and ended up with &lt;a href=&#34;//jekyllrb.com&#34;&gt;Jekyll&lt;/a&gt;. I found a theme
-I liked and spent some time tweaking it. I wrote my first blog post, about
-&lt;a href=&#34;//cycript.org&#34;&gt;Cycript&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;And that was it. I left the blog to gather dust on my machine, never seeing
-the light of &lt;del&gt;day&lt;/del&gt; the internet.&lt;/p&gt;
-
-&lt;p&gt;In january of 2015, I wrote a second blog post - this time about an iOS debugging
-tip. I now had &lt;em&gt;two&lt;/em&gt; posts, surely this was the time to publish the blog!&lt;/p&gt;
-
-&lt;p&gt;Nope. Never happened.&lt;/p&gt;
-
-&lt;p&gt;Which brings us to this post. As I said, it&amp;rsquo;s that time of the year again. I tried
-to get my old blog running (or rather &lt;em&gt;generated&lt;/em&gt;) again, but I was met with:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ jekyll serve
-Configuration file: /Users/timandersson/Development/Web/Jekyll/personal_blog/_config.yml
-            Source: /Users/timandersson/Development/Web/Jekyll/personal_blog
-       Destination: /Users/timandersson/Development/Web/Jekyll/personal_blog/_site
-      Generating... 
-                    done.
-I, [2016-01-04T21:59:42.024583 #78054]  INFO -- : Celluloid 0.17.2 is running in BACKPORTED mode. [ http://git.io/vJf3J ]
-jekyll 2.5.3 | Error:  wrong number of arguments (2 for 1)
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;I spent some time wrestling with different incantations of &lt;code&gt;rvm&lt;/code&gt; and &lt;code&gt;gem&lt;/code&gt; but
-quickly grew tired of trying to get it to work. I was close to giving up on my
-dream of becoming a blogger. Then, a couple of days ago, I stumbled across
-&lt;a href=&#34;//gohugo.io&#34;&gt;Hugo&lt;/a&gt;. It was easy to &lt;a href=&#34;//gohugo.io/tutorials/installing-on-mac/&#34;&gt;setup&lt;/a&gt;
-and I quickly found a &lt;a href=&#34;//themes.gohugo.io/hikari/&#34;&gt;theme&lt;/a&gt; I liked using their
-&lt;a href=&#34;//themes.gohugo.io&#34;&gt;theme showcase&lt;/a&gt;. It even led to me creating my very first
-&lt;a href=&#34;https://github.com/digitalcraftsman/hugo-hikari-theme/pull/4&#34;&gt;pull request&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;I ported my two blog posts from the Jekyll format to the format used by Hugo
-and started writing this post. Will I ever get around to publishing the blog?&lt;/p&gt;
-
-&lt;p&gt;I hope so.&lt;/p&gt;
-</description>
+      <description>It&amp;rsquo;s that time of the year. The I-should-create-a-blog time of the year.
+Nearly two years ago, at the beginning of 2014, I figured it was time to get into the blogging game. I did some research on what the most popular static site generator was and ended up with Jekyll. I found a theme I liked and spent some time tweaking it. I wrote my first blog post, about Cycript.</description>
     </item>
     
     <item>
@@ -549,26 +55,7 @@ and started writing this post. Will I ever get around to publishing the blog?&lt
       <pubDate>Thu, 01 Jan 2015 19:21:05 +0100</pubDate>
       
       <guid>http://ndersson.me/post/print_view_controller_hierarchy/</guid>
-      <description>&lt;p&gt;A few days ago I stumbled across an excellent article on &lt;a href=&#34;http://www.objc.io&#34;&gt;obj.io&lt;/a&gt; about
-debugging, titled &lt;a href=&#34;http://www.objc.io/issue-19/debugging-case-study.html&#34;&gt;Debugging: A Case Study&lt;/a&gt;. The article walks us through
-the workflow of fixing a bug that turned out to be an issue in UIKit, and contains
-a number of useful debugging tricks. There was one trick that I did not previously
-know about, and which turned out to be immediately useful - printing the view
-controller hierarchy.&lt;/p&gt;
-
-&lt;p&gt;Similar to how it&amp;rsquo;s possible to print the &lt;em&gt;view&lt;/em&gt; hierarchy using the private
-method &lt;code&gt;-[UIView recursiveDescription]&lt;/code&gt;, on iOS 8+ it&amp;rsquo;s also possible to print the
-&lt;em&gt;view controller&lt;/em&gt; hierarchy using another private method: &lt;code&gt;-[UIViewController _printHierarchy]&lt;/code&gt;.
-By calling this method on a window&amp;rsquo;s root view controller, we can see the entire
-view controller hierarchy for a window. This is especially useful in the debugger:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-objc&#34;&gt;(lldb) po [[[UIWindow keyWindow] rootViewController] _printHierarchy]
-&amp;lt;UINavigationController 0x7fe295815c00&amp;gt;, state: appeared, view: &amp;lt;UILayoutContainerView 0x7fe29411a860&amp;gt;
-   | &amp;lt;TPAInitialViewController 0x7fe294118150&amp;gt;, state: appeared, view: &amp;lt;UIView 0x7fe29411fc90&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;If you have any cool and/or useful debugging tricks of your own, let me know on &lt;a href=&#34;http://twitter.com/boerworz&#34;&gt;Twitter&lt;/a&gt;.&lt;/p&gt;
-</description>
+      <description>A few days ago I stumbled across an excellent article on obj.io about debugging, titled Debugging: A Case Study. The article walks us through the workflow of fixing a bug that turned out to be an issue in UIKit, and contains a number of useful debugging tricks. There was one trick that I did not previously know about, and which turned out to be immediately useful - printing the view controller hierarchy.</description>
     </item>
     
     <item>
@@ -577,27 +64,8 @@ view controller hierarchy for a window. This is especially useful in the debugge
       <pubDate>Fri, 28 Feb 2014 15:53:32 +0100</pubDate>
       
       <guid>http://ndersson.me/post/cycript_and_netnewswire/</guid>
-      <description>&lt;p&gt;Yesterday, I gave &lt;a href=&#34;http://www.cycript.org&#34;&gt;Cycript&lt;/a&gt; a shot. I&amp;rsquo;ve stumbled across it several times in the past, but
-never given it a try. I&amp;rsquo;m glad I finally did, because it is very cool!&lt;/p&gt;
-
-&lt;p&gt;Cycript is an interactive console that lets you modify running applications on either iOS or OS X using a weird hybrid of JavaScript and Objective-C++ syntax. It lets you call arbitrary methods on objects, find instances of a certain class (through &lt;a href=&#34;http://www.cycript.org/manual/#7061c058-5485-4c00-be7e-b67accc55796&#34;&gt;magic&lt;/a&gt;), and offers tab-completion and syntax highlighting for all of this. I suggest you head over to the &lt;a href=&#34;http://www.cycript.org&#34;&gt;site&lt;/a&gt; to read more about it and to install it!&lt;/p&gt;
-
-&lt;p&gt;Anyhow, after playing with it for a while, I put together a (&lt;em&gt;very&lt;/em&gt;) small script that removes the ads from NetNewsWire:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;var adView = choose(NNWAdView)[0];
-if(adView != null) {
-    [adView.superview removeFromSuperview];
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;em&gt;Note: Please don&amp;rsquo;t use this script instead of purchasing NNW.&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;To use it, simply launch NetNewsWire and run the script with &lt;code&gt;cycript -p NetNewsWire remove_ads.cy&lt;/code&gt; (assuming you&amp;rsquo;ve saved
-the script to a file named &lt;code&gt;remove_ads.cy&lt;/code&gt;). Observe that since Cycript injected the script into the running NetNewsWire process, the changes are lost as soon as NetNewsWire is restarted.&lt;/p&gt;
-
-&lt;p&gt;Even though this is a very simple script, it gives a tiny glimpse into how powerful and easy-to-use Cycript is. I&amp;rsquo;m just getting started, and plan to
-try it out on my iPod Touch next. Perhaps this is the first step on a road to writing my first iOS tweak.&lt;/p&gt;
-</description>
+      <description>Yesterday, I gave Cycript a shot. I&amp;rsquo;ve stumbled across it several times in the past, but never given it a try. I&amp;rsquo;m glad I finally did, because it is very cool!
+Cycript is an interactive console that lets you modify running applications on either iOS or OS X using a weird hybrid of JavaScript and Objective-C++ syntax. It lets you call arbitrary methods on objects, find instances of a certain class (through magic), and offers tab-completion and syntax highlighting for all of this.</description>
     </item>
     
   </channel>

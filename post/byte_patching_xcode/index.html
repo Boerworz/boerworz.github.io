@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+
+
+
+ <html class="no-js"> 
+<head>
+    <title>Byte patching Xcode 9.3 to get back the dark appearance of the Open Quickly menu &middot; ndersson.me</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta http-equiv="content-language" content="en-us" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="author" content="Tim Andersson">
+    <meta name="description" content="A little bit of code.">
+    <meta name="generator" content="Hugo 0.38.2" />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" type="text/css" href="http://ndersson.me/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/tomorrow.min.css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,300,700|Lora:400,700,400italic" rel="stylesheet" type="text/css">
+</head>
+<body>
+    
+    <div class="off-canvas">
+    <figure class="avatar">
+        <img src="http://ndersson.me/img/avatar.jpg" title="Tim Andersson">
+    </figure>
+    <div class="bio">
+        
+        <h1>Hi, I&#39;m Tim</h1>
+        
+        
+        <p>I like to dabble in all things related to programming, and occasionally I write about what I&rsquo;m up to.</p>
+        
+    </div>
+    <nav>
+        
+
+        <ul>
+            <li><a target="_blank" href="http://ndersson.me/index.xml">RSS feed</a></li>
+        </ul>
+
+        
+        <h6>Follow me on</h6>
+        
+
+        <ul>
+        
+            <li><a href="//github.com/boerworz">Github</a></li>
+        
+            <li><a href="//twitter.com/boerworz">Twitter</a></li>
+        
+        </ul>        
+    </nav>
+</div>
+
+
+    <div class="site-wrapper">
+        <header>
+	<div class="h-wrap">
+		
+		<h1 class="title"><a href="http://ndersson.me/">ndersson.me</a></h1>
+		
+		<a class="menu-icon" title="Menu"><span class="lines"></span></a>
+	</div>
+</header>
+        
+        <section class="single-wrap">
+            <article class="single-content" itemscope itemtype="//schema.org/BlogPosting">
+                <div class="feat">
+                    <h5 class="page-date">
+                    <time datetime="" itemprop="datePublished">
+                    15. April 2018
+                    </time>
+                    </h5>
+                </div>
+                <h1 class="page-title" itemprop="name headline">Byte patching Xcode 9.3 to get back the dark appearance of the Open Quickly menu</h1>
+                <div itemprop="articleBody">
+                    
+
+<p>If you&rsquo;re a frequent user of the <em>Open Quickly</em> feature in Xcode, and you use a dark
+menu bar and Dock, then you might have noticed that the appearance of the
+<em>Open Quickly</em> window changed in Xcode 9.3. In versions prior to Xcode 9.3 the
+<em>Open Quickly</em> window would use a dark theme if you used a dark menu bar and Dock,
+but the <em>Open Quickly</em> window in Xcode 9.3 always uses a light theme.</p>
+
+
+<figure>
+    
+        <img src="/img/xcode_open_quickly.png" alt="Screenshot of Open Quickly in Xcode" width="200" />
+    
+    
+    <figcaption>
+        <h4>Open Quickly in Xcode 9.3 (left) and Xcode 9.2 (right)</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>Turns out that the dark theme is still there, and it&rsquo;s possible to re-enable it!
+Re-enabling it involves unsigning Xcode and byte patching a binary, but it&rsquo;s
+<em>possible</em>! :&#xfeff;-&#xfeff;)</p>
+
+<p>In the rest of this post I&rsquo;ll explain how we can reverse engineer Xcode to find
+the code that&rsquo;s responsible for the styling of the <em>Open Quickly</em> feature, and
+then how we can byte patch the relevant binary.</p>
+
+<p><em><strong>Note:</strong> Everything in this post has only been tested on Xcode 9.3 (9E145)
+downloaded from the Apple Developer Portal. It will probably not work with any
+other version.</em></p>
+
+<h3 id="finding-the-code-responsible-for-the-dark-theme">Finding the code responsible for the dark theme</h3>
+
+<p>To understand if the dark theme for the <em>Open Quickly</em> feature is still available
+in Xcode 9.3 or not we need to disassemble the Xcode binary. However, seeing
+that the Xcode binary is only 35 KB there&rsquo;s probably not a lot going on in there.</p>
+
+<p>I remember reading somewhere (probably in a tweet by <a href="http://twitter.com/stroughtonsmith">@stroughtonsmith</a>) that basically all of the Xcode functionality
+is implemented in a bunch of frameworks that can be found in the Xcode.app bundle.
+If we take a look around in <code>Xcode.app/Contents/Frameworks</code> we&rsquo;ll see a framework
+called <code>IDEKit</code>. This jumped out at me (probably also from seeing it in a tweet
+sometime) and seems like a good a place as any to start, so let&rsquo;s disassemble
+the <code>IDEKit</code> binary using <a href="hopper-website">Hopper</a>.</p>
+
+<h4 id="using-hopper-to-inspect-idekit">Using Hopper to inspect IDEKit</h4>
+
+<p>If we use Hopper to search for labels matching <code>openquickly</code> in the <code>IDEKit</code>
+binary we can see that there&rsquo;s a bunch of classes that seem to implement the
+<em>Open Quickly</em> functionality. This means that we probably picked the right framework!
+Great!</p>
+
+<p>Let&rsquo;s see if there&rsquo;s any references to a dark theme in any of the <code>openquickly</code>
+classes by searching for <code>openquickly dark</code>. Well well well, the top result of
+<code>-[IDEAbstractOpenQuicklyWindowController inDarkMode]</code> certainly seems like a
+great indication that there&rsquo;s still code in here for a dark theme (or mode).
+We can find even more evidence by looking at what code references the <code>-inDarkMode</code>
+method and using Hopper&rsquo;s pseudo-code feature to inspect the
+<code>-[IDEAbstractOpenQuicklyWindowController prepareToShowWindow]</code> method, which
+contains this snippet:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="c1">// ...
+</span><span class="c1"></span><span class="n">COND</span> <span class="o">=</span> <span class="p">[</span><span class="n">r15</span> <span class="n">inDarkMode</span><span class="p">]</span> <span class="o">==</span> <span class="mh">0x0</span><span class="p">;</span>
+<span class="n">rax</span> <span class="o">=</span> <span class="o">*</span><span class="n">_NSAppearanceNameVibrantDark</span><span class="p">;</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">COND</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">rax</span> <span class="o">=</span> <span class="o">*</span><span class="n">_NSAppearanceNameVibrantLight</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="o">//</span> <span class="p">...</span></code></pre></div>
+
+<p>The return value of <code>-inDarkMode</code> seems to decide which visual effect the
+<em>Open Quickly</em> window uses. Similar conditionals can be found in the other methods
+that reference <code>-inDarkMode</code>.</p>
+
+<p>Let&rsquo;s find out how <code>-inDarkMode</code> is implemented using the handy pseudo-code
+feature again:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">char</span> <span class="o">-</span><span class="p">[</span><span class="n">IDEAbstractOpenQuicklyWindowController</span> <span class="n">inDarkMode</span><span class="p">](</span><span class="kt">void</span> <span class="o">*</span> <span class="n">self</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">_cmd</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">r14</span> <span class="o">=</span> <span class="p">[[</span><span class="n">self</span> <span class="n">window</span><span class="p">]</span> <span class="n">retain</span><span class="p">];</span>
+    <span class="n">rbx</span> <span class="o">=</span> <span class="p">[[</span><span class="n">r14</span> <span class="n">dvt_theme</span><span class="p">]</span> <span class="n">retain</span><span class="p">];</span>
+    <span class="n">r15</span> <span class="o">=</span> <span class="p">[</span><span class="n">rbx</span> <span class="n">isDark</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">rbx</span> <span class="n">release</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">r14</span> <span class="n">release</span><span class="p">];</span>
+    <span class="n">rax</span> <span class="o">=</span> <span class="n">sign_extend_64</span><span class="p">(</span><span class="n">r15</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">rax</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+<p>This is basically just doing <code>return [[[self window] dvt_theme] isDark];</code> which
+doesn&rsquo;t really tell us a whole lot. Our next step is to figure out what type of
+object <code>-dvt_theme</code> returns and how its <code>-isDark</code> method is implemented.</p>
+
+<p>Unfortunately, the <code>-dvt_theme</code> method and its related return type aren&rsquo;t declared
+in <code>IDEKit</code>. They must be implemented in one of the other frameworks in the
+Xcode bundle, so let&rsquo;s have another look in there.</p>
+
+<p>There&rsquo;s nothing in the <code>Frameworks</code> folder that seems related to the <code>dvt</code> prefix,
+but in the <code>SharedFrameworks</code> folder there&rsquo;s a bunch of frameworks that are
+named using a <code>DVT</code> prefix. One of them is called <code>DVTKit</code> and since we had
+success with the similarly named <code>IDEKit</code> let&rsquo;s open <code>DVTKit</code> in Hopper!</p>
+
+<h4 id="using-hopper-to-inspect-dvtkit">Using Hopper to inspect DVTKit</h4>
+
+<p>This time we know a bit more what we&rsquo;re looking for, so let&rsquo;s search for labels
+matching <code>dvt_theme</code>. It turns out we&rsquo;re pretty good at guessing which frameworks
+are relevant, because right there at the top of the search results is <code>-[NSWindow dvt_theme]</code>!</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">void</span> <span class="o">*</span> <span class="o">-</span><span class="p">[</span><span class="n">NSWindow</span> <span class="n">dvt_theme</span><span class="p">](</span><span class="kt">void</span> <span class="o">*</span> <span class="n">self</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">_cmd</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">r14</span> <span class="o">=</span> <span class="p">[</span><span class="n">objc_getAssociatedObject</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="err">@</span><span class="n">selector</span><span class="p">(</span><span class="n">dvt_theme</span><span class="p">))</span> <span class="n">retain</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">r14</span> <span class="o">!=</span> <span class="mh">0x0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">rbx</span> <span class="o">=</span> <span class="p">[</span><span class="n">r14</span> <span class="n">retain</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+        <span class="n">r15</span> <span class="o">=</span> <span class="p">[[</span><span class="n">DVTThemeManager</span> <span class="n">shared</span><span class="p">]</span> <span class="n">retain</span><span class="p">];</span>
+        <span class="n">rbx</span> <span class="o">=</span> <span class="p">[[</span><span class="n">r15</span> <span class="n">defaultTheme</span><span class="p">]</span> <span class="n">retain</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">r15</span> <span class="n">release</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="p">[</span><span class="n">r14</span> <span class="n">release</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">rbx</span> <span class="n">autorelease</span><span class="p">];</span>
+    <span class="n">rax</span> <span class="o">=</span> <span class="n">rbx</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">rax</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+<p>Unfortunately the pseudo-code doesn&rsquo;t tell us what the return type of the method
+is (it just says <code>void *</code>), but based on the name of the method and the fact that
+<code>DVTThemeManager</code> is mentioned in the implementation I think a good bet is
+<code>DVTTheme</code>.</p>
+
+<p>Searching for <code>DVTTheme</code> lets us know that we&rsquo;ve guessed correctly, and looking
+through the search results there&rsquo;s a <code>-[DVTTheme isDark]</code> method. That&rsquo;s very
+likely the method that the <em>Open Quickly</em> code in <code>IDEKit</code> is invoking to see
+if it should use a light or dark theme for its window. What does the
+pseudo-code for the <code>-isDark</code> method look like?</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">char</span> <span class="o">-</span><span class="p">[</span><span class="n">DVTTheme</span> <span class="n">isDark</span><span class="p">](</span><span class="kt">void</span> <span class="o">*</span> <span class="n">self</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">_cmd</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="mh">0x0</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+<p>Well, that definitely seems like it could be a reason for why we&rsquo;re not seeing
+the dark <em>Open Quickly</em> window in Xcode 9.3 anymore :&#xfeff;-&#xfeff;)</p>
+
+<p>We can compare the above implementation to the implementation in the version of
+<code>DVTKit</code> that ships with an older version of Xcode (9.2) to see if something
+changed:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-c" data-lang="c"><span class="kt">char</span> <span class="o">-</span><span class="p">[</span><span class="n">DVTTheme</span> <span class="n">isDark</span><span class="p">](</span><span class="kt">void</span> <span class="o">*</span> <span class="n">self</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span> <span class="n">_cmd</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">var_30</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
+    <span class="n">var_28</span> <span class="o">=</span> <span class="n">_cmd</span><span class="p">;</span>
+    <span class="n">r15</span> <span class="o">=</span> <span class="p">[[</span><span class="n">self</span><span class="o">-&gt;</span><span class="n">_contents</span> <span class="nl">objectForKey</span><span class="p">:</span><span class="err">@</span><span class="s">&#34;isDark&#34;</span><span class="p">]</span> <span class="n">retain</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">r15</span> <span class="o">!=</span> <span class="mh">0x0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">rdx</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSString</span> <span class="n">class</span><span class="p">];</span>
+            <span class="k">if</span> <span class="p">([</span><span class="n">r15</span> <span class="nl">isKindOfClass</span><span class="p">:</span><span class="n">rdx</span><span class="p">]</span> <span class="o">==</span> <span class="mh">0x0</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="c1">// ... stripped for brevity
+</span><span class="c1"></span>            <span class="p">}</span>
+            <span class="n">rbx</span> <span class="o">=</span> <span class="p">[</span><span class="n">r15</span> <span class="n">boolValue</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+            <span class="n">rbx</span> <span class="o">=</span> <span class="mh">0x0</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="p">[</span><span class="n">r15</span> <span class="n">release</span><span class="p">];</span>
+    <span class="n">rax</span> <span class="o">=</span> <span class="n">sign_extend_64</span><span class="p">(</span><span class="n">rbx</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">rax</span><span class="p">;</span>
+<span class="p">}</span></code></pre></div>
+
+<p>Hey, it definitely changed! We could dig deeper and try to understand how the
+<code>_contents</code> instance variable is populated and why this method would return
+<code>true</code> in previous versions of Xcode, but that might not lead anywhere. Besides,
+it&rsquo;s more fun to just change the current implementation of <code>-[DVTTheme isDark]</code>
+to see if something happens to the <em>Open Quickly</em> window!</p>
+
+<h3 id="byte-patching-xcode-dvtkit-for-fun-and-profit">Byte patching Xcode/DVTKit for fun and profit</h3>
+
+<p>By now we know that the <code>-[DVTTheme isDark]</code> method was modified in the latest version
+of Xcode (9.3), and we know that the <em>Open Quickly</em>-related class in <code>IDEKit</code>
+indirectly references that method when deciding which window background to use.
+All that&rsquo;s left to do is to figure out how we can modify the <code>DVTKit</code> binary so
+that <code>-[DVTTheme isDark]</code> returns <code>true</code> instead of <code>false</code>.</p>
+
+<p>I&rsquo;m absolutely no expert at reverse engineering or assembly, but I&rsquo;m pretty sure
+that by replacing one or more bytes in the <code>DVTKit</code> binary using a hex editor
+we should be able to change the behaviour of the aforementioned method.</p>
+
+<p>The first step in our journey towards byte patching <code>DVTKit</code> is to leave the
+comfortable world of Hopper&rsquo;s pseudo-code mode and start looking at the implementation
+of <code>-[DVTTheme isDark]</code> in Hopper&rsquo;s assembly mode:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-asm" data-lang="asm">                     <span class="err">-[</span><span class="nf">DVTTheme</span> <span class="no">isDark</span><span class="p">]:</span>
+<span class="err">00000000000163</span><span class="nf">c9</span>         <span class="no">push</span>       <span class="no">rbp</span>
+<span class="err">00000000000163</span><span class="nf">ca</span>         <span class="no">mov</span>        <span class="no">rbp</span><span class="p">,</span> <span class="no">rsp</span>
+<span class="err">00000000000163</span><span class="nf">cd</span>         <span class="no">xor</span>        <span class="no">eax</span><span class="p">,</span> <span class="no">eax</span>
+<span class="err">00000000000163</span><span class="nf">cf</span>         <span class="no">pop</span>        <span class="no">rbp</span>
+<span class="err">00000000000163</span><span class="nf">d0</span>         <span class="no">ret</span></code></pre></div>
+
+<p>After looking at this method for some time and Googling the names of x86 registers
+we come to the conclusion that the <code>xor eax, eax</code> operation is probably what&rsquo;s
+making the method return <code>0</code> (or <code>false</code>). The <code>eax</code> register seems to be what
+holds the return value of the method, and <code>xor eax, eax</code> is equivalent to
+<code>eax = eax ^ eax;</code> in C. XORing a value with itself always gives a result of
+<code>0</code>, which explains the pseudo-code we saw earlier in Hopper.</p>
+
+<p>If we want to change the return value of <code>-[DVTTheme isDark]</code> it would seem
+that modifying the <code>xor eax, eax</code> operation is the way forward. But what should we
+change it to? Since we can only <em>replace</em> bytes in the binary (changing the length
+of the binary would break other offsets and addresses), and the length in bytes of
+the <code>xor eax, eax</code> operation is 2 bytes (which <code>Scripts &gt; Disassemble instruction</code>
+in Hopper helpfully tells us) we&rsquo;re pretty limited in our options.</p>
+
+<p>Being pretty inexperienced with assembly, I couldn&rsquo;t think of a
+1- or 2-byte change that would <em>guarantee</em> that <code>eax</code> would be populated with a non-zero
+value. However, by changing the <code>XOR</code> instruction to an <code>OR</code> instruction we can
+at least avoid modifying the <code>eax</code> register (since <code>eax = eax | eax</code> is a no-op).
+If we&rsquo;re lucky the <code>eax</code> register might have a non-zero value in it when the
+<code>-[DVTTheme isDark]</code> method is called, which means it will return a non-zero
+value just like we wanted!</p>
+
+<h4 id="using-hopper-s-hex-editor-to-replace-a-byte">Using Hopper&rsquo;s hex editor to replace a byte</h4>
+
+<p>Hopper doesn&rsquo;t just have a pseudo-code mode and an assembly mode, it also has a
+hexadecimal mode that can be used as a hex editor. Just what we need! If we switch
+to the hexadecimal mode with the <code>xor eax, eax</code> instruction selected then Hopper
+will helpfully highlight the corresponding bytes (<code>31 C0</code>).</p>
+
+
+<figure>
+    
+        <img src="/img/dvtkit_xor_bytes.png" />
+    
+    
+    <figcaption>
+        <h4>The relevant part of the -[DVTTheme isDark] method selected in Hopper&#39;s hexadecimal mode</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>We can verify that these are the bytes that encode the <code>xor eax, eax</code> instruction
+by referring to an <a href="http://www.felixcloutier.com/x86/">x86 instruction set reference</a>
+and looking up the <a href="http://www.felixcloutier.com/x86/XOR.html">XOR instruction</a>.
+There&rsquo;s a bunch of different <a href="https://en.wikipedia.org/wiki/Opcode">opcodes</a>
+for the different combinations of operands, and one of them is indeed encoded
+as <code>31</code>. Looks like that&rsquo;s the byte we&rsquo;re replacing!</p>
+
+
+<figure>
+    
+        <img src="/img/xor_instruction.png" />
+    
+    
+    <figcaption>
+        <h4>The variant of the XOR instruction that&#39;s used in -[DVTTheme isDark]</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>To find the correct hexadecimal value to replace <code>31</code> with we&rsquo;ll refer to the
+<a href="http://www.felixcloutier.com/x86/OR.html">OR instruction reference</a> on the same website
+and look for an opcode that takes the same combination of operands (two registers):</p>
+
+
+<figure>
+    
+        <img src="/img/or_instruction.png" />
+    
+    
+    <figcaption>
+        <h4>The variant of the OR instruction that takes the correct combination of operands</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>That looks right! The leftmost column tells us that the first byte of this <code>OR</code>
+instruction is encoded as <code>09</code>, so that&rsquo;s what we&rsquo;ll replace <code>31</code> with. We can
+do that by double-clicking <code>31</code> in Hopper&rsquo;s hexadecimal mode and typing <code>09</code>.
+Hopper will highlight the new byte value in red to indicate that the byte has
+been changed.</p>
+
+
+<figure>
+    
+        <img src="/img/modified_dvtkit_bytes.png" />
+    
+    
+    <figcaption>
+        <h4>The red color of the byte value tells us that it differs from its original value</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>With the editing done all that&rsquo;s left is getting the modified <code>DVTKit</code> binary
+into the Xcode 9.3 bundle.</p>
+
+<h4 id="exporting-the-modified-binary">Exporting the modified binary</h4>
+
+<p>When we edit the disassembled binary in Hopper we aren&rsquo;t actually modifying the
+original binary. Hopper keeps its own internal representation of the binary, and
+that&rsquo;s what we&rsquo;re editing. To get a binary with our changes applied we need to use
+Hopper&rsquo;s <code>Produce New Executable…</code> option from the <code>File</code> menu. Since <code>DVTKit</code> is
+a signed binary Hopper will ask us if we want the new binary to have the old,
+invalid signature or if we want to remove it.</p>
+
+
+<figure>
+    
+        <img src="/img/hopper_invalid_signature.png" />
+    
+    
+</figure>
+
+
+<p>I believe both options will give us the same result in our case, but let&rsquo;s go
+ahead and remove the signature. We probably want to keep the original <code>DVTKit</code>
+binary around, so we should also make sure to save the modified binary somewhere
+where we don&rsquo;t overwrite the original binary.</p>
+
+<h4 id="getting-the-modified-binary-into-xcode">Getting the modified binary into Xcode</h4>
+
+<p>Before we move our new and improved <code>DVTKit</code> binary into Xcode I would recommend
+that we make a copy of Xcode 9.3 for reasons that will soon become clear.</p>
+
+<p>Then, when we have a copy of Xcode 9.3, we can go ahead and overwrite the existing
+<code>DVTKit</code> binary in Xcode 9.3 with our modified binary by moving or copying the
+modified binary into the <code>DVTKit</code> framework bundle. The full path to the <code>DVTKit</code>
+binary is <code>Xcode.app/Contents/SharedFrameworks/DVTKit.framework
+/Versions/A/DVTKit</code>.</p>
+
+<p>Now all we have to do is launch the copy of Xcode 9.3 that contains our modified
+binary and savour the fruits of our labour!</p>
+
+
+<figure>
+    
+        <img src="/img/xcode_crash.png" />
+    
+    
+    <figcaption>
+        <h4>What we&#39;re greeted with when launching Xcode</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<p>Oh. That&rsquo;s not what we were expecting. Did we make a mistake when editing the
+binary? Nope! If we look closely at the crash report it says <code>code signing
+blocked mmap() of 'Xcode.app/…/DVTKit'</code>. Remember when Hopper told us that we
+had modified a signed application and the new binary would have an invalid
+signature? Well this is the result of the modified <code>DVTKit</code> binary having an
+invalid or missing signature :-)</p>
+
+<p>To get around this we&rsquo;ll need to unsign Xcode. Fortunately there are tools that
+will do this for us! This is also why I recommended we make a copy of Xcode
+before replacing the <code>DVTKit</code> binary; I wouldn&rsquo;t feel safe using an unsigned
+version of Xcode in my day-to-day work.</p>
+
+<h4 id="unsigning-xcode">Unsigning Xcode</h4>
+
+<p>To unsign Xcode we&rsquo;ll use the free <a href="https://github.com/steakknife/unsign">unsign</a>
+utility. When we have downloaded the repository and have run <code>make</code> we&rsquo;ll have an
+<code>unsign</code> binary that&rsquo;s ready to use. Using it is really simple:</p>
+
+<div class="highlight"><pre class="chroma"><code class="language-sh" data-lang="sh"><span class="c1"># From the &#34;unsign&#34; directory
+</span><span class="c1"></span>$ ./unsign /Applications/Xcode<span class="se">\ </span>copy.app/Contents/MacOS/Xcode
+$ <span class="nb">cd</span> /Applications/Xcode<span class="se">\ </span>copy.app/Contents/MacOS
+$ mv Xcode.unsigned Xcode # unsign outputs a copy of the input binary</code></pre></div>
+
+<p>We should now, finally, be able to launch our unsigned and modified version of
+Xcode 9.3 and rejoice in the return of the dark <em>Open Quickly</em> menu!</p>
+
+
+<figure>
+    
+        <img src="/img/xcode_9.3_success.png" />
+    
+    
+    <figcaption>
+        <h4>Success at last!</h4>
+        
+    </figcaption>
+    
+</figure>
+
+
+<h3 id="conclusions">Conclusions</h3>
+
+<p>Phew. What a ride! At the start of this adventure I wasn&rsquo;t sure we would be
+able to find references to a dark theme in Xcode 9.3, let alone be able to
+<em>byte patch a binary</em> to get it back, but we did! That&rsquo;s pretty cool.</p>
+
+<p>I hope that I&rsquo;ve been able to show that reverse engineering and byte patching a
+binary is something that&rsquo;s been made relatively accessible through tools like Hopper.
+Even though there&rsquo;s a ton more features in Hopper that I don&rsquo;t understand,
+we can still do cool things like modifying Xcode by just being curious, being
+patient, and being good at Google :-)</p>
+
+<p>Have fun exploring!</p>
+
+                </div>
+                <div class="feat share">
+                    <a href="//twitter.com/share" class="popup">
+                        <span class="icon-twitter"></span>
+                    </a>
+                </div>
+                
+				<div id="post-navigation">
+					
+					
+						<a rel="prev" href="http://ndersson.me/post/recreating_the_castro_2_night_mode_transition/" id="prev">
+							&larr;<span class="nav-title nav-title-prev">Recreating the Castro 2 Night Mode Transition</span>
+						</a>
+					
+				</div>
+
+				
+
+            </article>
+        </section>
+
+        <footer>
+	
+	<small>Powered by <a href="//gohugo.io">Hugo</a> - Theme based on <a href="//github.com/digitalcraftsman/hugo-hikari-theme">Hikari</a> - © Tim Andersson</small>
+	
+</footer>
+    </div>
+    
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="http://ndersson.me/js/main.js"></script>
+
+
+<script>
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-71992214-1', 'auto');
+ga('send', 'pageview');
+</script>
+
+
+<!-- Syntax highlighting -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

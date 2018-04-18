@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://ndersson.me/</loc>
-    <lastmod>2016-08-17T11:13:24+02:00</lastmod>
+    <loc>http://ndersson.me/post/byte_patching_xcode/</loc>
+    <lastmod>2018-04-15T14:34:13+02:00</lastmod>
   </url>
   
   <url>
@@ -29,6 +30,28 @@
   <url>
     <loc>http://ndersson.me/post/cycript_and_netnewswire/</loc>
     <lastmod>2014-02-28T15:53:32+01:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>http://ndersson.me/categories/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ndersson.me/post/</loc>
+    <lastmod>2018-04-15T14:34:13+02:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ndersson.me/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>http://ndersson.me/</loc>
+    <lastmod>2018-04-15T14:34:13+02:00</lastmod>
+    <priority>0</priority>
   </url>
   
 </urlset>

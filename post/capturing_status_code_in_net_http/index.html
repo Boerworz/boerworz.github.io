@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta name="author" content="Tim Andersson">
     <meta name="description" content="A little bit of code.">
-    <meta name="generator" content="Hugo 0.16" />
+    <meta name="generator" content="Hugo 0.38.2" />
 
     <!-- Stylesheets -->
     <link rel="stylesheet" type="text/css" href="http://ndersson.me/css/main.css" />
@@ -90,30 +90,28 @@ of any other part of the response, this approach can easily be extended.</p>
 <p>To get things started, let&rsquo;s put together a very basic web service that responds
 with a <code>404 Not Found</code> to all requests except requests for the root:</p>
 
-<div class="highlight"><pre><code class="language-go" data-lang="go"><span></span><span class="kn">package</span> <span class="nx">main</span>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
 <span class="kn">import</span> <span class="p">(</span>
-    <span class="s">&quot;fmt&quot;</span>
-    <span class="s">&quot;log&quot;</span>
-    <span class="s">&quot;net/http&quot;</span>
+    <span class="s">&#34;fmt&#34;</span>
+    <span class="s">&#34;log&#34;</span>
+    <span class="s">&#34;net/http&#34;</span>
 <span class="p">)</span>
 
 <span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">HandleFunc</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="nx">handleRoot</span><span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">HandleFunc</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">handleRoot</span><span class="p">)</span>
 
-    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">&quot;:8080&quot;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">))</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8080&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">))</span>
 <span class="p">}</span>
 
 <span class="kd">func</span> <span class="nx">handleRoot</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="nx">req</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span> <span class="o">!=</span> <span class="s">&quot;/&quot;</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nx">req</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span> <span class="o">!=</span> <span class="s">&#34;/&#34;</span> <span class="p">{</span>
         <span class="nx">http</span><span class="p">.</span><span class="nx">NotFound</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">req</span><span class="p">)</span>
         <span class="k">return</span>
     <span class="p">}</span>
 
-    <span class="nx">fmt</span><span class="p">.</span><span class="nx">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&quot;Hello, World!&quot;</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre></div>
-
+    <span class="nx">fmt</span><span class="p">.</span><span class="nx">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, World!&#34;</span><span class="p">)</span>
+<span class="p">}</span></code></pre></div>
 
 <p>After starting our service using <code>go run main.go</code>, navigating to
 <a href="http://localhost:8080/">http://localhost:8080/</a> should present us with <code>&quot;Hello, World!&quot;</code>. If we navigate
@@ -130,35 +128,29 @@ Our first idea is to create a function that takes a <code>http.Handler</code> an
 returning a new handler that logs some information about the request before
 invoking the wrapped handler:</p>
 
-<div class="highlight"><pre><code class="language-go" data-lang="go"><span></span><span class="kd">func</span> <span class="nx">wrapHandlerWithLogging</span><span class="p">(</span><span class="nx">wrappedHandler</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">wrapHandlerWithLogging</span><span class="p">(</span><span class="nx">wrappedHandler</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&quot;--&gt; %s %s&quot;</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">Method</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span><span class="p">)</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;--&gt; %s %s&#34;</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">Method</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span><span class="p">)</span>
 
         <span class="nx">wrapperHandler</span><span class="p">.</span><span class="nx">ServeHTTP</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="nx">req</span><span class="p">)</span>
     <span class="p">})</span>
-<span class="p">}</span>
-</code></pre></div>
+<span class="p">}</span></code></pre></div>
 
-
-<div class="highlight"><pre><code class="language-go" data-lang="go"><span></span><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="nx">rootHandler</span> <span class="o">:=</span> <span class="nx">wrapHandlerWithLogging</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">(</span><span class="nx">handleRoot</span><span class="p">))</span>
-    <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="nx">rootHandler</span><span class="p">)</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">&#34;/&#34;</span><span class="p">,</span> <span class="nx">rootHandler</span><span class="p">)</span>
 
-    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">&quot;:8080&quot;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">))</span>
-<span class="p">}</span>
-</code></pre></div>
-
+    <span class="nx">log</span><span class="p">.</span><span class="nx">Fatal</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8080&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">))</span>
+<span class="p">}</span></code></pre></div>
 
 <p>This works just as one would expect. If we make a few requests to our server,
 we will see something along the following lines in our terminal:</p>
 
-<div class="highlight"><pre><code class="language-text" data-lang="text"><span></span>$ go run main.go
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">$ go run main.go
 2016/03/02 21:44:42 --&gt; GET /
 2016/03/02 21:46:18 --&gt; GET /foo
 2016/03/02 21:46:20 --&gt; GET /bar
-2016/03/02 21:46:21 --&gt; GET /baz
-</code></pre></div>
-
+2016/03/02 21:46:21 --&gt; GET /baz</code></pre></div>
 
 <p>Pretty cool! However, it would be even cooler if we could log the response as
 well. We figure we can just add another <code>log.Printf</code> after the call to
@@ -176,7 +168,7 @@ This is in fact possible, and quite easy to do at that. By creating a new struct
 that <a href="https://golang.org/doc/effective_go.html#embedding">embeds</a> an <code>http.ResponseWriter</code> we can implement the
 <code>WriteHeader</code> method to store the status code in our new struct:</p>
 
-<div class="highlight"><pre><code class="language-go" data-lang="go"><span></span><span class="kd">type</span> <span class="nx">loggingResponseWriter</span> <span class="kd">struct</span> <span class="p">{</span>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">loggingResponseWriter</span> <span class="kd">struct</span> <span class="p">{</span>
     <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span>
     <span class="nx">statusCode</span> <span class="kt">int</span>
 <span class="p">}</span>
@@ -188,40 +180,34 @@ that <a href="https://golang.org/doc/effective_go.html#embedding">embeds</a> an 
 <span class="kd">func</span> <span class="p">(</span><span class="nx">lrw</span> <span class="o">*</span><span class="nx">loggingResponseWriter</span><span class="p">)</span> <span class="nx">WriteHeader</span><span class="p">(</span><span class="nx">code</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">lrw</span><span class="p">.</span><span class="nx">statusCode</span> <span class="p">=</span> <span class="nx">code</span>
     <span class="nx">lrw</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">.</span><span class="nx">WriteHeader</span><span class="p">(</span><span class="nx">code</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre></div>
-
+<span class="p">}</span></code></pre></div>
 
 <p>When we have our new <code>loggingResponseWriter</code> type, we simply need to make sure
 that our wrapped handler is passed a <code>loggingResponseWriter</code> instead of the
 standard <code>http.ResponseWriter</code>:</p>
 
-<div class="highlight"><pre><code class="language-go" data-lang="go"><span></span><span class="kd">func</span> <span class="nx">wrapHandlerWithLogging</span><span class="p">(</span><span class="nx">wrappedHandler</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nx">wrapHandlerWithLogging</span><span class="p">(</span><span class="nx">wrappedHandler</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span><span class="p">)</span> <span class="nx">http</span><span class="p">.</span><span class="nx">Handler</span> <span class="p">{</span>
     <span class="k">return</span> <span class="nx">http</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&quot;--&gt; %s %s&quot;</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">Method</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span><span class="p">)</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;--&gt; %s %s&#34;</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">Method</span><span class="p">,</span> <span class="nx">req</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span><span class="p">)</span>
 
         <span class="nx">lrw</span> <span class="o">:=</span> <span class="nx">NewLoggingResponseWriter</span><span class="p">(</span><span class="nx">w</span><span class="p">)</span>
         <span class="nx">wrappedHandler</span><span class="p">.</span><span class="nx">ServeHTTP</span><span class="p">(</span><span class="nx">lrw</span><span class="p">,</span> <span class="nx">req</span><span class="p">)</span>
 
         <span class="nx">statusCode</span> <span class="o">:=</span> <span class="nx">lrw</span><span class="p">.</span><span class="nx">statusCode</span>
-        <span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&quot;&lt;-- %d %s&quot;</span><span class="p">,</span> <span class="nx">statusCode</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusText</span><span class="p">(</span><span class="nx">statusCode</span><span class="p">))</span>
+        <span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&#34;&lt;-- %d %s&#34;</span><span class="p">,</span> <span class="nx">statusCode</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StatusText</span><span class="p">(</span><span class="nx">statusCode</span><span class="p">))</span>
     <span class="p">})</span>
-<span class="p">}</span>
-</code></pre></div>
-
+<span class="p">}</span></code></pre></div>
 
 <p>If we run our service again and make some requests we will see that the HTTP
 status code from the response is now logged:</p>
 
-<div class="highlight"><pre><code class="language-text" data-lang="text"><span></span>$ go run main.go
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">$ go run main.go
 2016/03/03 20:17:53 --&gt; GET /
 2016/03/03 20:17:53 &lt;-- 200 OK
 2016/03/03 20:17:56 --&gt; GET /foo
 2016/03/03 20:17:56 &lt;-- 404 Not Found
 2016/03/03 20:17:57 --&gt; GET /bar
-2016/03/03 20:17:57 &lt;-- 404 Not Found
-</code></pre></div>
-
+2016/03/03 20:17:57 &lt;-- 404 Not Found</code></pre></div>
 
 <p>Just what we wanted!</p>
 
@@ -286,7 +272,7 @@ post.</p>
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
 ga('create', 'UA-71992214-1', 'auto');
 ga('send', 'pageview');
