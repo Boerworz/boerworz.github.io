@@ -2,68 +2,68 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>ndersson.me</title>
-    <link>http://ndersson.me/</link>
+    <link>//ndersson.me/</link>
     <description>Recent content on ndersson.me</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 15 Apr 2018 14:34:13 +0200</lastBuildDate>
     
-	<atom:link href="http://ndersson.me/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="//ndersson.me/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Byte patching Xcode 9.3 to get back the dark appearance of the Open Quickly menu</title>
-      <link>http://ndersson.me/post/byte_patching_xcode/</link>
+      <link>//ndersson.me/post/byte_patching_xcode/</link>
       <pubDate>Sun, 15 Apr 2018 14:34:13 +0200</pubDate>
       
-      <guid>http://ndersson.me/post/byte_patching_xcode/</guid>
+      <guid>//ndersson.me/post/byte_patching_xcode/</guid>
       <description>If you&amp;rsquo;re a frequent user of the Open Quickly feature in Xcode, and you use a dark menu bar and Dock, then you might have noticed that the appearance of the Open Quickly window changed in Xcode 9.3. In versions prior to Xcode 9.3 the Open Quickly window would use a dark theme if you used a dark menu bar and Dock, but the Open Quickly window in Xcode 9.</description>
     </item>
     
     <item>
       <title>Recreating the Castro 2 Night Mode Transition</title>
-      <link>http://ndersson.me/post/recreating_the_castro_2_night_mode_transition/</link>
+      <link>//ndersson.me/post/recreating_the_castro_2_night_mode_transition/</link>
       <pubDate>Wed, 17 Aug 2016 11:13:24 +0200</pubDate>
       
-      <guid>http://ndersson.me/post/recreating_the_castro_2_night_mode_transition/</guid>
+      <guid>//ndersson.me/post/recreating_the_castro_2_night_mode_transition/</guid>
       <description>Supertop recently released version 2.0 of their podcast player for iOS, Castro. When I watched the trailer, the Night Mode feature in particular caught my eye. Rather, the way the feature was enabled is what caught my eye. If you watch the trailer, you&amp;rsquo;ll see that Night Mode is enabled by swiping down with two fingers from any screen, and that the transition is super-slick and seamless.
 Since I really liked the transition, I thought it would be an interesting challenge to see if I could recreate it.</description>
     </item>
     
     <item>
       <title>[Go] Capturing the HTTP status code from http.ResponseWriter</title>
-      <link>http://ndersson.me/post/capturing_status_code_in_net_http/</link>
+      <link>//ndersson.me/post/capturing_status_code_in_net_http/</link>
       <pubDate>Thu, 03 Mar 2016 20:45:46 +0100</pubDate>
       
-      <guid>http://ndersson.me/post/capturing_status_code_in_net_http/</guid>
+      <guid>//ndersson.me/post/capturing_status_code_in_net_http/</guid>
       <description>I&amp;rsquo;ve slowly but surely been learning Go over the past few months, and I recently began working on a web service in my spare time. Go comes with a great builtin package for building web services, net/http, and in this post I&amp;rsquo;ll cover how to wrap the http.ResponseWriter type to capture the HTTP status code from the response. This is useful if you need to log the status code after the response handler has completed.</description>
     </item>
     
     <item>
       <title>That time of the year</title>
-      <link>http://ndersson.me/post/that_time_of_the_year/</link>
+      <link>//ndersson.me/post/that_time_of_the_year/</link>
       <pubDate>Mon, 04 Jan 2016 17:52:29 +0100</pubDate>
       
-      <guid>http://ndersson.me/post/that_time_of_the_year/</guid>
+      <guid>//ndersson.me/post/that_time_of_the_year/</guid>
       <description>It&amp;rsquo;s that time of the year. The I-should-create-a-blog time of the year.
 Nearly two years ago, at the beginning of 2014, I figured it was time to get into the blogging game. I did some research on what the most popular static site generator was and ended up with Jekyll. I found a theme I liked and spent some time tweaking it. I wrote my first blog post, about Cycript.</description>
     </item>
     
     <item>
       <title>Printing the View Controller Hierarchy on iOS</title>
-      <link>http://ndersson.me/post/print_view_controller_hierarchy/</link>
+      <link>//ndersson.me/post/print_view_controller_hierarchy/</link>
       <pubDate>Thu, 01 Jan 2015 19:21:05 +0100</pubDate>
       
-      <guid>http://ndersson.me/post/print_view_controller_hierarchy/</guid>
+      <guid>//ndersson.me/post/print_view_controller_hierarchy/</guid>
       <description>A few days ago I stumbled across an excellent article on obj.io about debugging, titled Debugging: A Case Study. The article walks us through the workflow of fixing a bug that turned out to be an issue in UIKit, and contains a number of useful debugging tricks. There was one trick that I did not previously know about, and which turned out to be immediately useful - printing the view controller hierarchy.</description>
     </item>
     
     <item>
       <title>Cycript and NetNewsWire</title>
-      <link>http://ndersson.me/post/cycript_and_netnewswire/</link>
+      <link>//ndersson.me/post/cycript_and_netnewswire/</link>
       <pubDate>Fri, 28 Feb 2014 15:53:32 +0100</pubDate>
       
-      <guid>http://ndersson.me/post/cycript_and_netnewswire/</guid>
+      <guid>//ndersson.me/post/cycript_and_netnewswire/</guid>
       <description>Yesterday, I gave Cycript a shot. I&amp;rsquo;ve stumbled across it several times in the past, but never given it a try. I&amp;rsquo;m glad I finally did, because it is very cool!
 Cycript is an interactive console that lets you modify running applications on either iOS or OS X using a weird hybrid of JavaScript and Objective-C++ syntax. It lets you call arbitrary methods on objects, find instances of a certain class (through magic), and offers tab-completion and syntax highlighting for all of this.</description>
     </item>
